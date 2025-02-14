@@ -1,9 +1,10 @@
 import ModelDetails from '@/components/ModelDetails'
 
 interface PageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export default function ModelDetailsPage({ params }: PageProps) {
-  return <ModelDetails modelId={params.id} />
+export default async function ModelDetailsPage({ params }: PageProps) {
+  const { id } = await params
+  return <ModelDetails modelId={id} />
 } 

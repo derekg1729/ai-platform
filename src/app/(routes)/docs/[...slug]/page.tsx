@@ -2,12 +2,13 @@ import { getMarkdownContent } from '@/lib/mdx'
 import { notFound } from 'next/navigation'
 
 interface PageProps {
-  params: { slug: string[] }
+  params: Promise<{ slug: string[] }>
 }
 
 export default async function DocsPage({ params }: PageProps) {
+  const { slug } = await params
   // Handle both section and subsection paths
-  const path = `src/content/docs/${params.slug.join('/')}`
+  const path = `src/content/docs/${slug.join('/')}`
   const indexPath = `${path}/index.mdx`
   const directPath = `${path}.mdx`
 
