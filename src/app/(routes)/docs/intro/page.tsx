@@ -1,7 +1,12 @@
 import { getMarkdownContent } from '@/lib/mdx'
+import { notFound } from 'next/navigation'
 
 export default async function IntroPage() {
   const content = await getMarkdownContent('src/content/shared/platform-docs.mdx')
+  
+  if (!content) {
+    return notFound()
+  }
 
   return (
     <div className="container mx-auto px-4 py-4">
