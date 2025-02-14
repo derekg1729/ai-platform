@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button'
 export function NavBar() {
   const router = useRouter()
   const menuItems = [
-    { label: "Browse", href: "/browse" },
-    { label: "My Agents", href: "/my-agents" },
+    { label: "My Agents", href: "/agents" },
     { label: "Analytics", href: "/analytics" },
-    { label: "Marketplace", href: "/marketplace" },
+    { label: "Models", href: "/marketplace" },
     { label: "Docs", href: "/docs" },
   ]
 
