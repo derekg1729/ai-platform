@@ -10,6 +10,7 @@ interface FeedbackEntry {
   content: string
   timestamp: string
   status: 'new' | 'acknowledged' | 'error' | 'ignored'
+  agentId: string
 }
 
 // Dummy feedback data
@@ -18,30 +19,36 @@ const DUMMY_FEEDBACK: FeedbackEntry[] = [
     id: 'f1',
     content: 'Agent provided incorrect data format for the financial analysis',
     timestamp: '2024-02-26T10:30:00Z',
-    status: 'acknowledged'
+    status: 'acknowledged',
+    agentId: 'agent1'
   },
   {
     id: 'f2',
     content: 'Response time was slower than usual during peak hours',
     timestamp: '2024-02-25T15:45:00Z',
-    status: 'new'
+    status: 'new',
+    agentId: 'agent1'
   },
   {
     id: 'f3',
     content: 'API integration with Salesforce failed multiple times',
     timestamp: '2024-02-24T09:15:00Z',
-    status: 'error'
+    status: 'error',
+    agentId: 'agent1'
   }
 ]
 
 interface Props {
-  agentId: string // Adding back agentId as it's needed for context
+  agentId: string // Required for submitting feedback
 }
 
 export default function AgentFeedback({ agentId }: Props) {
   const [feedback, setFeedback] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [feedbackList, setFeedbackList] = useState<FeedbackEntry[]>(DUMMY_FEEDBACK)
+  const [feedbackList, setFeedbackList] = useState<FeedbackEntry[]>(
+    // Filter dummy feedback to only show entries for this agent
+    DUMMY_FEEDBACK.filter(f => f.agentId === agentId)
+  )
 
   const handleSubmit = async () => {
     if (!feedback.trim()) return
@@ -55,6 +62,7 @@ export default function AgentFeedback({ agentId }: Props) {
       // Add new feedback to the list
       const newFeedback: FeedbackEntry = {
         id: `f${Date.now()}`,
+        agentId, // Use the agentId from props
         content: feedback,
         timestamp: new Date().toISOString(),
         status: 'new'
