@@ -243,7 +243,7 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
 
         {/* Right Column */}
         <div className="space-y-6">
-          <AgentFeedback agentId={agentId} />
+          <AgentFeedback agentId={agent.id} />
         </div>
       </div>
 

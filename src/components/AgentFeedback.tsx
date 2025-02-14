@@ -35,31 +35,38 @@ const DUMMY_FEEDBACK: FeedbackEntry[] = [
 ]
 
 interface Props {
-  onSubmit: (feedback: string) => Promise<void>
+  agentId: string // Adding back agentId as it's needed for context
 }
 
-export default function AgentFeedback({ onSubmit }: Props) {
+export default function AgentFeedback({ agentId }: Props) {
   const [feedback, setFeedback] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [feedbackList, setFeedbackList] = useState<FeedbackEntry[]>(DUMMY_FEEDBACK)
 
   const handleSubmit = async () => {
+    if (!feedback.trim()) return
+
     setIsSubmitting(true)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Add new feedback to the list
-    const newFeedback: FeedbackEntry = {
-      id: `f${Date.now()}`,
-      content: feedback,
-      timestamp: new Date().toISOString(),
-      status: 'new'
+    try {
+      // In Designer Mode, simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Add new feedback to the list
+      const newFeedback: FeedbackEntry = {
+        id: `f${Date.now()}`,
+        content: feedback,
+        timestamp: new Date().toISOString(),
+        status: 'new'
+      }
+      
+      setFeedbackList([newFeedback, ...feedbackList])
+      setFeedback('')
+    } catch (error) {
+      console.error('Failed to submit feedback:', error)
+    } finally {
+      setIsSubmitting(false)
     }
-    
-    setFeedbackList([newFeedback, ...feedbackList])
-    setFeedback('')
-    setIsSubmitting(false)
   }
 
   const handleStatusChange = (feedbackId: string, newStatus: FeedbackEntry['status']) => {
