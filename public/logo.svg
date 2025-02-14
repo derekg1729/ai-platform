@@ -1,0 +1,20 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Glow effect -->
+  <filter id="glow">
+    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+    <feMerge>
+      <feMergeNode in="coloredBlur"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
+  
+  <!-- Cube -->
+  <g filter="url(#glow)">
+    <!-- Front face -->
+    <path d="M64 32L96 48L64 64L32 48L64 32Z" fill="#00FF00" fillOpacity="0.8"/>
+    <!-- Right face -->
+    <path d="M96 48L96 80L64 96L64 64L96 48Z" fill="#00CC00" fillOpacity="0.8"/>
+    <!-- Left face -->
+    <path d="M64 64L64 96L32 80L32 48L64 64Z" fill="#009900" fillOpacity="0.8"/>
+  </g>
+</svg> 

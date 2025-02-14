@@ -1,0 +1,16 @@
+Start all chat responses with 🤖
+
+Follow security best practices for authentication and authorization.
+
+## Stack
+
+- Next.js
+- Tailwind CSS
+- TypeScript
+- Prisma
+- PostgreSQL
+- shadcn/ui
+
+## Misc
+
+- use npx shadcn@latest add * to install shadcn components
