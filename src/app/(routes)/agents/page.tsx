@@ -17,12 +17,12 @@ export default function AgentsPage() {
     async function loadAgents() {
       try {
         const response = await listUserAgents()
-        if (response.success && response.data) {
-          setAgents(response.data.items)
-        } else {
+        if (!response.success || !response.data) {
           setError(response.error?.message || 'Failed to load agents')
+          return
         }
-      } catch (err) {
+        setAgents(response.data.items)
+      } catch {
         setError('An unexpected error occurred')
       } finally {
         setLoading(false)

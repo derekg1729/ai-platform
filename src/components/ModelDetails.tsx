@@ -20,12 +20,12 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
     async function loadData() {
       try {
         const response = await getModel(modelId)
-        if (response.success && response.data) {
-          setModel(response.data)
-        } else {
-          setError(response.error?.message || 'Failed to load model')
+        if (!response.success) {
+          setError(response.error?.message || 'Failed to load model details')
+          return
         }
-      } catch (err) {
+        setModel(response.data || null)
+      } catch {
         setError('An unexpected error occurred')
       } finally {
         setLoading(false)

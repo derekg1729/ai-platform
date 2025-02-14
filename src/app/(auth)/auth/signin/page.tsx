@@ -68,7 +68,7 @@ export default function SignInPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <span className="text-gray-400">Don't have an account?</span>
+            <span className="text-gray-400">Don&apos;t have an account?</span>
             {" "}
             <Link
               href="/auth/signup"

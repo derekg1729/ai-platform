@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -34,11 +34,11 @@ const DUMMY_FEEDBACK: FeedbackEntry[] = [
   }
 ]
 
-interface AgentFeedbackProps {
-  agentId: string
+interface Props {
+  onSubmit: (feedback: string) => Promise<void>
 }
 
-export default function AgentFeedback({ agentId }: AgentFeedbackProps) {
+export default function AgentFeedback({ onSubmit }: Props) {
   const [feedback, setFeedback] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [feedbackList, setFeedbackList] = useState<FeedbackEntry[]>(DUMMY_FEEDBACK)
@@ -91,7 +91,7 @@ export default function AgentFeedback({ agentId }: AgentFeedbackProps) {
         {/* Feedback Input */}
         <div>
           <p className="text-sm text-gray-400 mb-4">
-            Your feedback helps improve the agent's performance. The agent will use this information as context for future operations.
+            Your feedback helps improve the agent&apos;s performance. The agent will use this information as context for future operations.
           </p>
           <Textarea
             placeholder="Share your experience with this agent..."

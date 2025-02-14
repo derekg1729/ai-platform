@@ -29,7 +29,7 @@ export default async function DocsPage({ params }: PageProps) {
         </div>
       </div>
     )
-  } catch (error) {
+  } catch {
     return notFound()
   }
 } 

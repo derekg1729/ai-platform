@@ -52,13 +52,13 @@ export default function AgentLogs({ agentId }: AgentLogsProps) {
     async function loadLogs() {
       try {
         const response = await getAgentLogs(agentId)
-        if (response.success && response.data) {
-          // In designer mode, use dummy data
-          setLogs(DUMMY_LOGS)
-        } else {
+        if (!response.success) {
           setError(response.error?.message || 'Failed to load logs')
+          return
         }
-      } catch (err) {
+        // In Designer Mode, use dummy data
+        setLogs(DUMMY_LOGS)
+      } catch {
         setError('An unexpected error occurred')
       } finally {
         setLoading(false)

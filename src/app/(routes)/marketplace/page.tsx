@@ -16,12 +16,12 @@ export default function MarketplacePage() {
     async function loadModels() {
       try {
         const response = await listModels()
-        if (response.success && response.data) {
-          setModels(response.data.items)
-        } else {
+        if (!response.success || !response.data) {
           setError(response.error?.message || 'Failed to load models')
+          return
         }
-      } catch (err) {
+        setModels(response.data.items)
+      } catch {
         setError('An unexpected error occurred')
       } finally {
         setLoading(false)
