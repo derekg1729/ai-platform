@@ -44,20 +44,6 @@ export function NavBar() {
             </button>
           </div>
 
-          {/* Menu Items */}
-          <div className={`md:flex space-x-2 ${isMobileMenuOpen ? 'block' : 'hidden'} md:block`}>
-            {menuItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="text-gray-300 hover:text-white hover:bg-white/10 px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 relative group"
-              >
-                <span className="relative z-10">{item.label}</span>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </Link>
-            ))}
-          </div>
-
           {/* Right Side */}
           <div className="hidden md:flex items-center">
             <Button 
@@ -69,28 +55,25 @@ export function NavBar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="flex flex-col space-y-2 mt-4">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="text-gray-300 hover:text-white hover:bg-white/10 px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Button 
-                onClick={() => router.push('/auth/signin')}
-                className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2.5 h-auto text-base rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20"
-              >
-                Connect
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Menu Items */}
+        <div className={`flex-col md:flex md:flex-row md:space-x-2 ${isMobileMenuOpen ? 'flex' : 'hidden'} md:flex`}>
+          {menuItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="text-gray-300 hover:text-white hover:bg-white/10 px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-200 relative group"
+            >
+              <span className="relative z-10">{item.label}</span>
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </Link>
+          ))}
+          <Button 
+            onClick={() => router.push('/auth/signin')}
+            className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2.5 h-auto text-base rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20"
+          >
+            Connect
+          </Button>
+        </div>
       </div>
     </nav>
   )
