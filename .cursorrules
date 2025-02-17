@@ -11,6 +11,11 @@ Follow security best practices for authentication and authorization.
 - PostgreSQL
 - shadcn/ui
 
+## Testing Stack
+- Jest
+- React Testing Library
+- Next.js Testing Library
+
 ## Misc
 
 - use npx shadcn@latest add * to install shadcn components

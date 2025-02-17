@@ -21,7 +21,7 @@ export function NavBar() {
     setMounted(true)
   }, [])
 
-  // Close mobile menu when route changes
+  // Close mobile menu when routfe changes
   useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [router])

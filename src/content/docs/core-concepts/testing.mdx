@@ -1,0 +1,40 @@
+# Testing
+
+## Stack
+- Jest + React Testing Library + Next.js Testing Library
+- Focus on user interactions and accessibility
+- Integration with Next.js features
+
+## Structure
+```
+src/__tests__/
+├── unit/         # Component tests
+├── integration/  # Feature tests
+├── setup/       # Test utilities
+└── fixtures/    # Test data
+```
+
+## Best Practices
+1. Test behavior, not implementation
+2. Use semantic queries (getByRole, getByLabelText)
+3. Wrap state updates in act()
+4. Mock external dependencies
+
+## Example
+```typescript
+describe('Component', () => {
+  it('handles user interaction', async () => {
+    render(<Component />)
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => {
+      expect(screen.getByRole('menu')).toBeVisible()
+    })
+  })
+})
+```
+
+## Running Tests
+```bash
+npm test           # Run all tests
+npm test --watch  # Watch mode
+``` 

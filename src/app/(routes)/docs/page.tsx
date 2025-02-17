@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Introduction from '@/content/docs/index.mdx'
 import CoreConcepts from '@/content/docs/core-concepts/index.mdx'
 import ApiReference from '@/content/docs/api-reference/index.mdx'
+import Testing from '@/content/docs/core-concepts/testing.mdx'
 
 /**
  * DUMMY DATA: Documentation sections and items
@@ -36,6 +37,11 @@ const sections: DocSection[] = [
     id: "api-reference",
     title: "API Reference",
     content: ApiReference
+  },
+  {
+    id: "testing",
+    title: "Testing",
+    content: Testing
   }
 ]
 

@@ -3,96 +3,24 @@
 > ⚠️ This README is auto-generated from the documentation in `src/content/docs`. Please edit the source files instead.
 > To regenerate this file, run: `npx ts-node scripts/generate-docs.ts`
 
-# Introduction
+# Documentation
 
-AI Agent Hub enables platform developers to build and ship AI models as standardized microservices, while allowing users to browse, deploy, and manage personalized agent instances.
+Welcome to the AI Platform documentation.
 
-## Quick Start
+## Quick Links
+- [Getting Started](/docs/getting-started)
+- [Core Concepts](/docs/core-concepts)
+- [API Reference](/docs/api-reference)
+- [Testing](/docs/core-concepts/testing)
 
-1. Clone and install:
-```bash
-git clone https://github.com/derekg1729/ai-platform
-cd ai-platform
-npm install
-```
+## Sections
 
-2. Start development server:
-```bash
-npm run dev
-```
-
-3. Open [http://localhost:3000](http://localhost:3000)
-
-## Key Features
-
-- **Model Marketplace**: Browse and discover AI models
-- **Agent Management**: Deploy and configure personal agent instances
-- **API Integration**: Connect agents with third-party services
-- **Usage Analytics**: Monitor performance and usage metrics
-
-## Who is it for?
-
-### Platform Developers
-- Build and ship AI models as standardized services
-- Define clear API contracts and documentation
-- Monitor usage and performance
-
-### Platform Users
-- Browse and discover AI models
-- Deploy personalized agent instances
-- Connect agents with third-party services
-
-## Project Status
-
-Currently in Designer Mode with a fully functional UI prototype. The project includes:
-
-- ✅ UI mockup
-- ✅ Type definitions and interfaces
-- ✅ Mock data structures and API responses
-- ✅ Implementation tracking for Builder Mode transition
-- ⚠️ Backend functionality (coming soon)
-
-## Tech Stack
-
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **UI Components**: Modern, accessible components
-- **Theme**: Dark mode with consistent styling
-
-## Project Structure
-
-```
-src/
-├── app/                    # Next.js app router
-│   ├── (routes)/          # Main application routes
-│   │   ├── agents/        # Agent management
-│   │   ├── marketplace/   # Model marketplace
-│   │   ├── analytics/     # Usage statistics
-│   │   └── docs/          # Documentation
-│   └── (auth)/            # Authentication routes
-├── components/            # Reusable UI components
-├── lib/                   # Utilities (mocked)
-└── types/                 # TypeScript definitions
-```
-
-## Exploring the Prototype
-
-1. **Browse Models**
-   - Visit the marketplace to see available AI models
-   - Explore model details and capabilities
-
-2. **View Agents**
-   - View specific agent instances and their data
-   - Configure mock API keys and settings
-
-3. **Documentation**
-   - Read about [Core Concepts](/docs/core-concepts)
-   - Explore the [API Reference](/docs/api-reference)
+#
 
 ## Getting Started
 
-
+- Installation & setup
+- Basic usage
 
 ## Documentation
 
