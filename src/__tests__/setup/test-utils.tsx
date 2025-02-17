@@ -1,22 +1,22 @@
-import React from 'react'
-import { render, RenderOptions } from '@testing-library/react'
+import { render as rtlRender, RenderOptions } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
-// Add custom providers here as needed
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
+// Add any providers here
+function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {children}
-    </>
+    // We can add providers as needed
+    <>{children}</>
   )
 }
 
-const customRender = (
-  ui: React.ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options })
+function render(ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
+  return {
+    ...rtlRender(ui, { wrapper: Providers, ...options }),
+    // Return userEvent instance for better interaction testing
+    user: userEvent.setup()
+  }
+}
 
 // Re-export everything
 export * from '@testing-library/react'
-
-// Override render method
-export { customRender as render } 
+export { render, userEvent } 

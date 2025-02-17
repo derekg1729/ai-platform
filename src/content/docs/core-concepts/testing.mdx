@@ -1,9 +1,9 @@
 # Testing
 
 ## Stack
-- Jest + React Testing Library + Next.js Testing Library
-- Focus on user interactions and accessibility
-- Integration with Next.js features
+- Jest + React Testing Library
+- Next.js Testing Library
+- Jest DOM matchers
 
 ## Structure
 ```
@@ -15,17 +15,57 @@ src/__tests__/
 ```
 
 ## Best Practices
-1. Test behavior, not implementation
-2. Use semantic queries (getByRole, getByLabelText)
-3. Wrap state updates in act()
-4. Mock external dependencies
+
+### 1. Queries (in order of preference)
+```typescript
+// ✅ Recommended
+getByRole('button', { name: /submit/i })
+getByLabelText('Email')
+getByText('Welcome')
+getByDisplayValue('input value')
+
+// ⚠️ Use only when necessary
+getByTestId('submit-button')
+```
+
+### 2. User Events
+```typescript
+// ✅ Use userEvent for realistic interactions
+await userEvent.click(button)
+await userEvent.type(input, 'text')
+
+// ❌ Avoid fireEvent when possible
+fireEvent.click(button)
+```
+
+### 3. Next.js Router
+```typescript
+// Router is mocked globally in jest.setup.js
+const mockPush = jest.fn()
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush })
+}))
+
+// In tests
+expect(mockPush).toHaveBeenCalledWith('/path')
+```
+
+### 4. Async Testing
+```typescript
+await waitFor(() => {
+  expect(screen.getByRole('alert')).toBeInTheDocument()
+})
+```
 
 ## Example
 ```typescript
 describe('Component', () => {
   it('handles user interaction', async () => {
-    render(<Component />)
-    fireEvent.click(screen.getByRole('button'))
+    const { user } = render(<Component />)
+    
+    const button = screen.getByRole('button')
+    await user.click(button)
+    
     await waitFor(() => {
       expect(screen.getByRole('menu')).toBeVisible()
     })
