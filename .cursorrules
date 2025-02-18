@@ -2,14 +2,21 @@ Start all chat responses with 🤖
 
 Follow security best practices for authentication and authorization.
 
-## Stack
+## FrontendStack
 
 - Next.js
 - Tailwind CSS
 - TypeScript
+- shadcn/ui
+- Prisma
+
+##BackendStack
+
+- Rust
+- Actix-web
 - Prisma
 - PostgreSQL
-- shadcn/ui
+
 
 ## Testing Stack
 - Jest
