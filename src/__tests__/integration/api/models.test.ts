@@ -26,6 +26,47 @@ describe('Models API', () => {
       expect(data.data).toHaveLength(1)
       expect(data.data[0].id).toBe(model.id)
     })
+
+    it('should filter models by category', async () => {
+      await createTestModel() // Creates a 'test' category model
+      const response = await fetch('http://localhost:3000/api/models?category=chat')
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.data).toHaveLength(0) // No chat models
+    })
+
+    it('should filter models by minimum version', async () => {
+      const model = await createTestModel() // Creates version 1.0.0
+      const response = await fetch('http://localhost:3000/api/models?minVersion=0.9.0')
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.data).toHaveLength(1)
+      expect(data.data[0].id).toBe(model.id)
+    })
+
+    it('should filter models by capabilities', async () => {
+      const model = await createTestModel() // Has capabilities ['test1', 'test2']
+      const response = await fetch('http://localhost:3000/api/models?capabilities=test1')
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.data).toHaveLength(1)
+      expect(data.data[0].id).toBe(model.id)
+    })
+
+    it('should return 400 for invalid category', async () => {
+      const response = await fetch('http://localhost:3000/api/models?category=invalid')
+      const data = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('Invalid category')
+    })
   })
 
   describe('POST /api/models', () => {
@@ -35,9 +76,18 @@ describe('Models API', () => {
       name: 'Test Model 2',
       description: 'Another test model',
       version: '1.0.0',
-      category: 'test',
+      category: 'chat',
       capabilities: ['test1', 'test2'],
-      apiSpec: { input: { type: 'string' }, output: { type: 'string' } },
+      apiSpec: {
+        input: { type: 'string' },
+        output: { type: 'string' },
+      },
+      pricing: { type: 'free' },
+      stats: {
+        rating: 4.5,
+        reviews: 0,
+        deployments: 0,
+      },
     }
 
     it('should create a new model', async () => {
@@ -72,19 +122,36 @@ describe('Models API', () => {
       expect(data.error).toBe('Model with this ID already exists')
     })
 
-    it('should return 400 when required fields are missing', async () => {
+    it('should return 400 for invalid version format', async () => {
       const response = await fetch('http://localhost:3000/api/models', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: 'Incomplete Model',
+          ...validModel,
+          version: 'invalid',
         }),
       })
       const data = await response.json()
 
       expect(response.status).toBe(400)
       expect(data.success).toBe(false)
-      expect(data.error).toContain('Missing required fields')
+      expect(data.error).toContain('Invalid')
+    })
+
+    it('should return 400 for invalid category', async () => {
+      const response = await fetch('http://localhost:3000/api/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...validModel,
+          category: 'invalid',
+        }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(data.success).toBe(false)
+      expect(data.error).toContain('Invalid')
     })
   })
 
@@ -116,6 +183,7 @@ describe('Models API', () => {
       const updates = {
         name: 'Updated Model Name',
         description: 'Updated description',
+        version: '1.1.0',
       }
 
       const response = await fetch(`http://localhost:3000/api/models/${model.id}`, {
@@ -129,6 +197,25 @@ describe('Models API', () => {
       expect(data.success).toBe(true)
       expect(data.data.name).toBe(updates.name)
       expect(data.data.description).toBe(updates.description)
+      expect(data.data.version).toBe(updates.version)
+    })
+
+    it('should reject version downgrade', async () => {
+      const model = await createTestModel() // Version 1.0.0
+      const updates = {
+        version: '0.9.0',
+      }
+
+      const response = await fetch(`http://localhost:3000/api/models/${model.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('New version must be higher than current version')
     })
   })
 
