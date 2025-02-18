@@ -9,30 +9,47 @@ jest.mock('@/lib/api/agents', () => ({
 
 const mockModels = [
   {
-    id: '1',
+    id: 'gpt-4',
     name: 'GPT-4',
     description: 'Advanced language model',
-    category: 'Language',
-    version: '1.0',
-    capabilities: ['Text Generation', 'Translation'],
-    pricing: { type: 'paid', amount: 10, period: 'month' },
+    category: 'Language Models',
+    version: '1.0.0',
+    capabilities: ['Natural language processing', 'Code generation'],
+    apiSpec: {
+      input: { type: 'string' },
+      output: { type: 'string' }
+    },
+    pricing: {
+      type: 'paid' as const,
+      amount: 0.03,
+      period: 'monthly' as const
+    },
     stats: {
-      rating: 4.8,
-      reviews: 120,
-      deployments: 1500
+      rating: 4.9,
+      reviews: 2500,
+      deployments: 10000
     }
   },
   {
-    id: '2',
-    name: 'DALL-E',
+    id: 'stable-diffusion',
+    name: 'Stable Diffusion',
     description: 'Image generation model',
-    category: 'Vision',
-    capabilities: ['Image Generation'],
-    pricing: { type: 'free' },
+    category: 'Image Generation',
+    version: '2.1',
+    capabilities: ['Text to image', 'Image to image'],
+    apiSpec: {
+      input: { type: 'string' },
+      output: { type: 'string' }
+    },
+    pricing: {
+      type: 'free' as const,
+      amount: 0,
+      period: 'yearly' as const
+    },
     stats: {
-      rating: 4.5,
-      reviews: 80,
-      deployments: 1000
+      rating: 4.7,
+      reviews: 1800,
+      deployments: 8000
     }
   }
 ]
@@ -52,7 +69,10 @@ describe('MarketplacePage', () => {
     const errorMessage = 'Failed to load models'
     jest.mocked(listModels).mockResolvedValueOnce({ 
       success: false, 
-      error: { message: errorMessage } 
+      error: { 
+        code: 'FETCH_ERROR',
+        message: errorMessage 
+      } 
     })
 
     render(<MarketplacePage />)
@@ -65,7 +85,13 @@ describe('MarketplacePage', () => {
   it('renders marketplace content successfully', async () => {
     jest.mocked(listModels).mockResolvedValueOnce({ 
       success: true, 
-      data: { items: mockModels }
+      data: { 
+        items: mockModels,
+        total: mockModels.length,
+        page: 1,
+        pageSize: 10,
+        hasMore: false
+      }
     })
 
     render(<MarketplacePage />)
@@ -83,11 +109,11 @@ describe('MarketplacePage', () => {
     expect(screen.getByRole('button', { name: 'Submit Model' })).toBeInTheDocument()
 
     // Check category filters
-    const categoryButtons = screen.getAllByRole('button', { name: /^(All|Language|Vision)$/ })
+    const categoryButtons = screen.getAllByRole('button', { name: /^(All|Language models|Image generation)$/ })
     expect(categoryButtons).toHaveLength(3) // 'all' + unique categories
     expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Language' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Vision' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Language models' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Image generation' })).toBeInTheDocument()
 
     // Check model cards
     mockModels.forEach(model => {
@@ -122,7 +148,13 @@ describe('MarketplacePage', () => {
   it('filters models by category', async () => {
     jest.mocked(listModels).mockResolvedValueOnce({ 
       success: true, 
-      data: { items: mockModels }
+      data: { 
+        items: mockModels,
+        total: mockModels.length,
+        page: 1,
+        pageSize: 10,
+        hasMore: false
+      }
     })
 
     const { user } = render(<MarketplacePage />)
@@ -136,18 +168,18 @@ describe('MarketplacePage', () => {
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(2)
 
     // Click Language category
-    await user.click(screen.getByText('Language'))
+    await user.click(screen.getByText('Language models'))
 
     // Only GPT-4 should be visible
     expect(screen.getByText('GPT-4')).toBeInTheDocument()
-    expect(screen.queryByText('DALL-E')).not.toBeInTheDocument()
+    expect(screen.queryByText('Stable Diffusion')).not.toBeInTheDocument()
 
     // Click Vision category
-    await user.click(screen.getByText('Vision'))
+    await user.click(screen.getByText('Image generation'))
 
-    // Only DALL-E should be visible
+    // Only Stable Diffusion should be visible
     expect(screen.queryByText('GPT-4')).not.toBeInTheDocument()
-    expect(screen.getByText('DALL-E')).toBeInTheDocument()
+    expect(screen.getByText('Stable Diffusion')).toBeInTheDocument()
 
     // Click All category
     await user.click(screen.getByText('All'))
@@ -159,7 +191,13 @@ describe('MarketplacePage', () => {
   it('handles navigation correctly', async () => {
     jest.mocked(listModels).mockResolvedValueOnce({ 
       success: true, 
-      data: { items: mockModels }
+      data: { 
+        items: mockModels,
+        total: mockModels.length,
+        page: 1,
+        pageSize: 10,
+        hasMore: false
+      }
     })
 
     render(<MarketplacePage />)
