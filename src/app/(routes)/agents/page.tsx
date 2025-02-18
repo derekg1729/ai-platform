@@ -66,10 +66,13 @@ export default function AgentsPage() {
                   <h3 className="text-xl font-semibold text-white mb-2">
                     {agent.name}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <span className={`w-2 h-2 rounded-full ${
-                      agent.status === 'running' ? 'bg-green-500' : 'bg-gray-500'
-                    }`} />
+                  <div className="flex items-center gap-2 text-sm text-gray-400" data-testid="status-container">
+                    <span 
+                      data-testid="status-dot"
+                      className={`w-2 h-2 rounded-full ${
+                        agent.status === 'running' ? 'bg-green-500' : 'bg-red-500'
+                      }`} 
+                    />
                     {agent.status === 'running' ? 'Active' : 'Inactive'}
                     <span className="mx-2">•</span>
                     Last active {agent.metrics.lastActive}

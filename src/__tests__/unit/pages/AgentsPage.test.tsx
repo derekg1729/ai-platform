@@ -2,7 +2,6 @@ import { render, screen, waitFor, within } from '@/__tests__/setup/test-utils'
 import AgentsPage from '@/app/(routes)/agents/page'
 import { listUserAgents } from '@/lib/api/agents'
 import { useRouter } from 'next/navigation'
-import { act, fireEvent } from '@testing-library/react'
 
 // Mock the API module
 jest.mock('@/lib/api/agents', () => ({
@@ -54,144 +53,127 @@ describe('AgentsPage', () => {
     jest.clearAllMocks()
   })
 
-  describe('Loading States', () => {
-    it('shows loading state initially', () => {
-      jest.mocked(listUserAgents).mockImplementation(() => new Promise(() => {}))
-      render(<AgentsPage />)
-      expect(screen.getByText('Loading...')).toBeInTheDocument()
+  it('shows loading state initially', () => {
+    jest.mocked(listUserAgents).mockImplementation(() => new Promise(() => {}))
+    render(<AgentsPage />)
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
+  })
+
+  it('displays error message when API fails', async () => {
+    const errorMessage = 'Failed to load agents'
+    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
+      success: false, 
+      error: { message: errorMessage } 
     })
 
-    it('displays error message when API fails', async () => {
-      const errorMessage = 'Failed to load agents'
-      jest.mocked(listUserAgents).mockResolvedValueOnce({ 
-        success: false, 
-        error: { message: errorMessage } 
-      })
+    render(<AgentsPage />)
 
-      render(<AgentsPage />)
-      await waitFor(() => {
-        expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument()
-      })
+    await waitFor(() => {
+      expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument()
     })
   })
 
-  describe('Empty State', () => {
-    it('renders empty state correctly', async () => {
-      jest.mocked(listUserAgents).mockResolvedValueOnce({ 
-        success: true, 
-        data: { items: [] }
-      })
-
-      const { user } = render(<AgentsPage />)
-
-      await waitFor(() => {
-        expect(screen.getByText('No agents deployed yet')).toBeInTheDocument()
-        expect(screen.getByText('Deploy your first AI agent from the marketplace to get started')).toBeInTheDocument()
-      })
-
-      const browseButton = screen.getByRole('button', { name: 'Browse Models' })
-      await user.click(browseButton)
-      expect(mockPush).toHaveBeenCalledWith('/marketplace')
+  it('renders empty state correctly', async () => {
+    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
+      success: true, 
+      data: { items: [] }
     })
+
+    const { user } = render(<AgentsPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('No agents deployed yet')).toBeInTheDocument()
+      expect(screen.getByText('Deploy your first AI agent from the marketplace to get started')).toBeInTheDocument()
+    })
+
+    // Test navigation to marketplace
+    const browseButton = screen.getByRole('button', { name: 'Browse Models' })
+    await user.click(browseButton)
+    expect(mockPush).toHaveBeenCalledWith('/marketplace')
   })
 
-  describe('Agents List', () => {
-    beforeEach(() => {
-      jest.mocked(listUserAgents).mockResolvedValueOnce({ 
-        success: true, 
-        data: { items: mockAgents }
-      })
+  it('renders agents list successfully', async () => {
+    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
+      success: true, 
+      data: { items: mockAgents }
     })
 
-    it('renders header and deploy button', async () => {
-      render(<AgentsPage />)
-      
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-      })
+    render(<AgentsPage />)
 
-      expect(screen.getByRole('heading', { name: 'My Agents' })).toBeInTheDocument()
-      expect(screen.getByText('Manage your deployed AI agents')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Deploy New Agent' })).toBeInTheDocument()
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
     })
 
-    it('renders agent cards with correct status', async () => {
-      render(<AgentsPage />)
-      
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-      })
+    // Check header content
+    expect(screen.getByRole('heading', { name: 'My Agents' })).toBeInTheDocument()
+    expect(screen.getByText('Manage your deployed AI agents')).toBeInTheDocument()
+    
+    // Check Deploy New Agent button
+    const deployButton = screen.getByRole('button', { name: 'Deploy New Agent' })
+    expect(deployButton).toBeInTheDocument()
 
-      mockAgents.forEach(agent => {
-        // Check agent name
-        const agentHeading = screen.getByRole('heading', { name: agent.name })
-        const agentCard = agentHeading.closest('div.bg-gray-900\\/50')
-        expect(agentCard).toBeInTheDocument()
+    // Check agent cards
+    mockAgents.forEach(agent => {
+      const agentHeading = screen.getByRole('heading', { name: agent.name })
+      const agentCard = agentHeading.closest('div.bg-gray-900\\/50')
+      expect(agentCard).toBeInTheDocument()
 
-        // Find the status container using a more flexible approach
-        const statusContainer = screen.getByText((content, element) => {
-          const hasStatus = content.includes(agent.status === 'running' ? 'Active' : 'Inactive')
-          const hasLastActive = content.includes(`Last active ${agent.metrics.lastActive}`)
-          return hasStatus && hasLastActive
+      // Check status indicator
+      const statusContainer = within(agentCard as HTMLElement)
+        .getByTestId('status-container')
+      expect(statusContainer).toHaveClass('flex', 'items-center', 'gap-2', 'text-sm', 'text-gray-400')
+      expect(statusContainer.textContent).toContain(agent.status === 'running' ? 'Active' : 'Inactive')
+      expect(statusContainer.textContent).toContain(`Last active ${agent.metrics.lastActive}`)
+
+      // Check status dot
+      const statusDot = within(statusContainer).getByTestId('status-dot')
+      expect(statusDot).toHaveClass('w-2', 'h-2', 'rounded-full', agent.status === 'running' ? 'bg-green-500' : 'bg-red-500')
+
+      // Check metrics
+      expect(screen.getByText(`${agent.metrics.uptime}%`)).toBeInTheDocument()
+      expect(screen.getByText(agent.metrics.requestsProcessed.toString())).toBeInTheDocument()
+      expect(screen.getByText(`${agent.metrics.averageResponseTime}s`)).toBeInTheDocument()
+
+      // Check API keys if present
+      if (Object.keys(agent.config.apiKeys).length > 0) {
+        Object.entries(agent.config.apiKeys).forEach(([service, key]) => {
+          expect(screen.getByText(service)).toBeInTheDocument()
+          expect(screen.getByText(key)).toBeInTheDocument()
         })
-        expect(statusContainer).toHaveClass('text-sm', 'text-gray-400')
+      }
 
-        // Find the status indicator dot
-        const statusDot = statusContainer.querySelector('span.rounded-full')
-        expect(statusDot).toHaveClass(agent.status === 'running' ? 'bg-green-500' : 'bg-gray-500')
-      })
+      // Check Manage button link
+      const manageButton = within(agentCard as HTMLElement).getByRole('button', { name: 'Manage' })
+      const manageLink = manageButton.closest('a')
+      expect(manageLink).toHaveAttribute('href', `/agents/${agent.id}`)
+    })
+  })
+
+  it('handles navigation correctly', async () => {
+    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
+      success: true, 
+      data: { items: mockAgents }
     })
 
-    it('renders agent metrics correctly', async () => {
-      render(<AgentsPage />)
-      
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-      })
+    const { user } = render(<AgentsPage />)
 
-      mockAgents.forEach(agent => {
-        expect(screen.getByText(`${agent.metrics.uptime}%`)).toBeInTheDocument()
-        expect(screen.getByText(agent.metrics.requestsProcessed.toString())).toBeInTheDocument()
-        expect(screen.getByText(`${agent.metrics.averageResponseTime}s`)).toBeInTheDocument()
-      })
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
     })
 
-    it('renders API keys when present', async () => {
-      render(<AgentsPage />)
-      
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-      })
+    // Test Deploy New Agent navigation
+    const deployButton = screen.getByRole('button', { name: 'Deploy New Agent' })
+    await user.click(deployButton)
+    expect(mockPush).toHaveBeenCalledWith('/marketplace')
 
-      mockAgents.forEach(agent => {
-        if (Object.keys(agent.config.apiKeys).length > 0) {
-          Object.entries(agent.config.apiKeys).forEach(([service, key]) => {
-            expect(screen.getByText(service)).toBeInTheDocument()
-            expect(screen.getByText(key)).toBeInTheDocument()
-          })
-        }
-      })
-    })
-
-    it('handles navigation correctly', async () => {
-      render(<AgentsPage />)
-
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-      })
-
-      // Test Deploy New Agent navigation
-      const deployButton = screen.getByRole('button', { name: 'Deploy New Agent' })
-      await act(async () => {
-        fireEvent.click(deployButton)
-      })
-      expect(mockPush).toHaveBeenCalledWith('/marketplace')
-
-      // Test Manage button navigation
-      const manageLinks = screen.getAllByRole('link')
-      mockAgents.forEach((agent, index) => {
-        expect(manageLinks[index]).toHaveAttribute('href', `/agents/${agent.id}`)
-      })
+    // Test Manage button navigation
+    mockAgents.forEach(agent => {
+      const agentHeading = screen.getByRole('heading', { name: agent.name })
+      const agentCard = agentHeading.closest('div.bg-gray-900\\/50')
+      const manageButton = within(agentCard as HTMLElement).getByRole('button', { name: 'Manage' })
+      const manageLink = manageButton.closest('a')
+      expect(manageLink).toHaveAttribute('href', `/agents/${agent.id}`)
     })
   })
 }) 
