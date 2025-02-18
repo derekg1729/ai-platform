@@ -1,80 +1,222 @@
 # Testing
 
-## Stack
+## Overview
+
+The AI Platform uses a comprehensive testing strategy that covers both frontend and backend components:
+
+- **Frontend Tests**: Component and page-level unit tests
+- **Backend Tests**: API and database integration tests
+- **End-to-End Tests**: Full user journey tests
+
+## Test Stack
+
+### Frontend Testing
 - Jest + React Testing Library
 - Next.js Testing Library
 - Jest DOM matchers
 
-## Structure
+### Backend Testing
+- Jest for API testing
+- Prisma for database testing
+- Mock fetch for API simulation
+
+## Directory Structure
 ```
 src/__tests__/
-├── unit/         # Component tests
-├── integration/  # Feature tests
-├── setup/       # Test utilities
-└── fixtures/    # Test data
+├── unit/              # Frontend component tests
+│   ├── components/    # UI component tests
+│   └── pages/        # Page component tests
+├── integration/       # Backend integration tests
+│   ├── api/          # API endpoint tests
+│   └── db/           # Database operation tests
+├── setup/            # Test configuration
+│   ├── jest.frontend.setup.ts   # Frontend setup
+│   ├── jest.backend.setup.ts    # Backend setup
+│   ├── test-utils.tsx           # Frontend test utilities
+│   └── backend-test-utils.ts    # Backend test utilities
+└── fixtures/         # Test data
+    └── agents/       # Agent-related fixtures
 ```
 
-## Best Practices
+## Backend Testing
 
-### 1. Queries (in order of preference)
+### API Testing
 ```typescript
-// ✅ Recommended
-getByRole('button', { name: /submit/i })
-getByLabelText('Email')
-getByText('Welcome')
-getByDisplayValue('input value')
+describe('API Endpoint', () => {
+  beforeEach(async () => {
+    await setupTestDatabase()
+    jest.clearAllMocks()
+  })
 
-// ⚠️ Use only when necessary
-getByTestId('submit-button')
-```
+  it('handles successful requests', async () => {
+    const mockResponse = mockFetchResponse(data)
+    global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
-### 2. User Events
-```typescript
-// ✅ Use userEvent for realistic interactions
-await userEvent.click(button)
-await userEvent.type(input, 'text')
+    const response = await fetch('/api/endpoint')
+    const { status, data } = await parseApiResponse(response)
 
-// ❌ Avoid fireEvent when possible
-fireEvent.click(button)
-```
+    expect(status).toBe(200)
+    expect(data.success).toBe(true)
+  })
 
-### 3. Next.js Router
-```typescript
-// Router is mocked globally in jest.setup.js
-const mockPush = jest.fn()
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush })
-}))
+  it('handles errors appropriately', async () => {
+    const mockResponse = mockFetchResponse(null, 400)
+    global.fetch = jest.fn().mockResolvedValue({
+      ...mockResponse,
+      json: jest.fn().mockResolvedValue({
+        success: false,
+        error: 'Error message',
+        timestamp: new Date().toISOString()
+      })
+    })
 
-// In tests
-expect(mockPush).toHaveBeenCalledWith('/path')
-```
+    const response = await fetch('/api/endpoint')
+    const { status, data } = await parseApiResponse(response)
 
-### 4. Async Testing
-```typescript
-await waitFor(() => {
-  expect(screen.getByRole('alert')).toBeInTheDocument()
+    expect(status).toBe(400)
+    expect(data.success).toBe(false)
+    expect(data.error).toBeDefined()
+  })
 })
 ```
 
-## Example
+### Database Testing
+```typescript
+describe('Database Operations', () => {
+  beforeEach(async () => {
+    await setupTestDatabase()
+  })
+
+  it('creates records successfully', async () => {
+    const record = await createTestRecord()
+    expect(record.id).toBeDefined()
+  })
+
+  it('handles relations correctly', async () => {
+    const parent = await createTestParent()
+    const child = await createTestChild(parent.id)
+    
+    const result = await testPrisma.parent.findUnique({
+      where: { id: parent.id },
+      include: { children: true }
+    })
+    
+    expect(result?.children).toHaveLength(1)
+  })
+})
+```
+
+## Frontend Testing
+
+### Component Testing
 ```typescript
 describe('Component', () => {
-  it('handles user interaction', async () => {
+  it('renders and handles interactions', async () => {
     const { user } = render(<Component />)
     
-    const button = screen.getByRole('button')
+    // Find elements
+    const button = screen.getByRole('button', { name: /submit/i })
+    const input = screen.getByLabelText('Email')
+    
+    // Interact
+    await user.type(input, 'test@example.com')
     await user.click(button)
     
+    // Assert
     await waitFor(() => {
-      expect(screen.getByRole('menu')).toBeVisible()
+      expect(screen.getByRole('alert')).toBeInTheDocument()
     })
   })
 })
 ```
 
+### Page Testing
+```typescript
+describe('Page', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('handles loading states', () => {
+    jest.mocked(apiCall).mockImplementation(() => new Promise(() => {}))
+    render(<Page />)
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
+  })
+
+  it('displays error states', async () => {
+    jest.mocked(apiCall).mockRejectedValue(new Error('Failed'))
+    render(<Page />)
+    
+    await waitFor(() => {
+      expect(screen.getByText(/error/i)).toBeInTheDocument()
+    })
+  })
+})
+```
+
+## Best Practices
+
+### Query Priority
+1. Semantic Queries (Most Preferred)
+```typescript
+getByRole('button', { name: /submit/i })
+getByLabelText('Email')
+getByText('Welcome')
+```
+
+2. Test IDs (When Necessary)
+```typescript
+getByTestId('submit-button')
+```
+
+### User Interactions
+```typescript
+// ✅ Preferred: userEvent
+await user.click(button)
+await user.type(input, 'text')
+
+// ⚠️ Avoid: fireEvent
+fireEvent.click(button)
+```
+
+### Async Testing
+```typescript
+// Wait for elements
+await waitFor(() => {
+  expect(element).toBeVisible()
+})
+
+// Wait for multiple conditions
+await waitFor(() => {
+  expect(element1).toBeVisible()
+  expect(element2).toHaveTextContent('Done')
+})
+```
+
 ## Running Tests
+
 ```bash
-npm test           # Run all tests
-npm test --watch  # Watch mode
-``` 
+# Run all tests
+npm test
+
+# Run frontend tests
+npm run test:frontend
+
+# Run backend tests
+npm run test:backend
+
+# Watch mode
+npm test -- --watch
+
+# Coverage report
+npm test -- --coverage
+```
+
+## Test Environment
+
+The test environment is automatically configured based on the test type:
+
+- Frontend tests use `jest-environment-jsdom`
+- Backend tests use `jest-environment-node`
+
+Configuration is handled in `jest.config.js` based on the `TEST_TYPE` environment variable. 

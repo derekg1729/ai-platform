@@ -1,16 +1,25 @@
 import { PrismaClient } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { v4 as uuidv4 } from 'uuid'
+import { createId } from '@paralleldrive/cuid2'
+import { randomUUID } from 'crypto'
 
 // Create a singleton instance for tests
 const testPrisma = prisma
 
+// Counter for unique test IDs
+let testCounter = 0
+
 export async function clearDatabase() {
   try {
     // Delete all records in reverse order of dependencies
-    await testPrisma.agent.deleteMany()
-    await testPrisma.model.deleteMany()
-    await testPrisma.user.deleteMany()
+    await testPrisma.$transaction([
+      testPrisma.agent.deleteMany(),
+      testPrisma.model.deleteMany(),
+      testPrisma.user.deleteMany(),
+    ])
+    
+    // Reset counter
+    testCounter = 0
   } catch (error) {
     console.error('clearDatabase error:', error)
     throw error
@@ -19,9 +28,29 @@ export async function clearDatabase() {
 
 export async function setupTestDatabase() {
   try {
+    // Ensure connection
+    await testPrisma.$connect()
+    
+    // Clear existing data
     await clearDatabase()
+    
+    // Reset counter
+    testCounter = 0
   } catch (error) {
     console.error('Failed to setup test database:', error)
+    throw error
+  }
+}
+
+export async function teardownTestDatabase() {
+  try {
+    // Clear data
+    await clearDatabase()
+    
+    // Disconnect
+    await testPrisma.$disconnect()
+  } catch (error) {
+    console.error('Failed to teardown test database:', error)
     throw error
   }
 }
@@ -30,41 +59,61 @@ export { testPrisma }
 
 // Test data generators
 export const createTestUser = async () => {
+  testCounter++
   return await testPrisma.user.create({
     data: {
-      id: uuidv4(),
-      email: `test-${uuidv4()}@example.com`,
       name: 'Test User',
+      email: `test-${testCounter}@example.com`,
     },
   })
 }
 
 export const createTestModel = async () => {
+  testCounter++
   return await testPrisma.model.create({
     data: {
-      id: `test-model-${uuidv4()}`,
+      id: `test-model-${testCounter}`,
       name: 'Test Model',
       description: 'A test model',
       version: '1.0.0',
-      category: 'test',
+      category: 'general',
       capabilities: ['test1', 'test2'],
-      apiSpec: { input: { type: 'string' }, output: { type: 'string' } },
-      pricing: { type: 'free' },
-      stats: { rating: 5 },
+      apiSpec: {
+        input: { type: 'string' },
+        output: { type: 'string' }
+      },
+      pricing: {
+        type: 'free'
+      },
+      stats: {
+        rating: 5,
+        reviews: 0,
+        deployments: 0
+      },
     },
   })
 }
 
 export const createTestAgent = async (userId: string, modelId: string) => {
+  testCounter++
   return await testPrisma.agent.create({
     data: {
-      id: uuidv4(),
+      id: `test-agent-${testCounter}`,
       name: 'Test Agent',
-      status: 'active',
+      status: 'initializing',
       userId,
       modelId,
-      config: { settings: { temperature: 0.7 } },
-      metrics: { uptime: 100 },
+      config: {
+        settings: {
+          temperature: 0.7
+        }
+      },
+      metrics: {
+        lastActive: new Date(),
+        uptime: 0,
+        requestsProcessed: 0,
+        averageResponseTime: 0
+      },
     },
   })
 } 

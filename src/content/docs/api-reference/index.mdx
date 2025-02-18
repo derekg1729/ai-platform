@@ -1,26 +1,151 @@
-
 # API Reference
 
+This document provides details about the available API endpoints in the AI Platform.
 
-SIKE
+## Models API
 
-No apis exist yet.
+### List Models
+```http
+GET /api/models
+```
 
+Query Parameters:
+- `category` - Filter models by category (e.g., chat, completion, embedding)
+- `minVersion` - Filter models by minimum version (e.g., "1.0.0")
+- `capabilities` - Filter models by required capabilities (comma-separated)
 
-## Endpoints
+Response:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "string",
+      "name": "string",
+      "description": "string",
+      "version": "string",
+      "category": "string",
+      "capabilities": ["string"],
+      "apiSpec": {
+        "input": { "type": "string" },
+        "output": { "type": "string" }
+      },
+      "pricing": {
+        "type": "free | paid | usage"
+      },
+      "stats": {
+        "rating": 0,
+        "reviews": 0,
+        "deployments": 0
+      }
+    }
+  ],
+  "timestamp": "string"
+}
+```
 
-### Models
-- `GET /models` - List available models
-- `GET /models/:id` - Get model details
+### Get Model
+```http
+GET /api/models/{modelId}
+```
 
-### Agents
-- `POST /agents` - Deploy new agent
-- `GET /agents` - List your agents
-- `GET /agents/:id` - Get agent details
-- `PUT /agents/:id/config` - Update configuration
-- `POST /agents/:id/start` - Start agent
-- `POST /agents/:id/stop` - Stop agent
+Returns detailed information about a specific model, including usage statistics.
 
-### Analytics
-- `GET /analytics/usage` - Get usage metrics
-- `GET /analytics/performance` - Get performance data
+### Create Model
+```http
+POST /api/models
+```
+
+Create a new model with the following required fields:
+- `id` - Unique identifier
+- `name` - Model name
+- `description` - Model description
+- `version` - Semantic version (e.g., "1.0.0")
+- `category` - One of: general, chat, completion, embedding, function, image, audio, video, multimodal
+- `capabilities` - Array of model capabilities
+- `apiSpec` - API specification for input/output
+- `pricing` - Pricing information
+- `stats` - Model statistics
+
+### Update Model
+```http
+PATCH /api/models/{modelId}
+```
+
+Update an existing model. All fields are optional. Version updates must follow semantic versioning and can only increment.
+
+### Delete Model
+```http
+DELETE /api/models/{modelId}
+```
+
+Delete a model. Only models with no active agents can be deleted.
+
+## Agents API
+
+### List Agents
+```http
+GET /api/agents
+```
+
+List all agents for the authenticated user. Requires `x-user-id` header.
+
+### Get Agent
+```http
+GET /api/agents/{agentId}
+```
+
+Get detailed information about a specific agent. Requires `x-user-id` header.
+
+### Create Agent
+```http
+POST /api/agents
+```
+
+Create a new agent instance. Required fields:
+- `name` - Agent name
+- `modelId` - ID of the model to use
+- `config` - Agent configuration
+
+### Update Agent
+```http
+PATCH /api/agents/{agentId}
+```
+
+Update an existing agent's configuration or status. Requires `x-user-id` header.
+
+### Delete Agent
+```http
+DELETE /api/agents/{agentId}
+```
+
+Delete an agent instance. Requires `x-user-id` header.
+
+## Authentication
+
+All endpoints require appropriate authentication. Currently, the platform uses a simple `x-user-id` header for demonstration purposes. In production, this will be replaced with proper JWT authentication.
+
+## Error Handling
+
+All endpoints return standardized error responses:
+
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "code": "ERROR_CODE",
+  "timestamp": "string"
+}
+```
+
+Common error codes:
+- `UNAUTHORIZED` - Missing or invalid authentication
+- `FORBIDDEN` - Insufficient permissions
+- `NOT_FOUND` - Resource not found
+- `INVALID_INPUT` - Invalid request data
+- `CONFLICT` - Resource conflict (e.g., duplicate ID)
+- `INTERNAL_SERVER_ERROR` - Server error
+
+## Analytics API
+
+Coming soon...

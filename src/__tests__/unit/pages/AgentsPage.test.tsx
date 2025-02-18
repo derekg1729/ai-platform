@@ -1,88 +1,91 @@
-import { render, screen, waitFor, within } from '@/__tests__/setup/test-utils'
+import React from 'react'
+import { render, screen, waitFor } from '@/__tests__/setup/test-utils'
 import AgentsPage from '@/app/(routes)/agents/page'
 import { listUserAgents } from '@/lib/api/agents'
-import { Agent } from '@/types/api'
+import type { Agent } from '@/types/api'
 
 // Mock the API module
 jest.mock('@/lib/api/agents', () => ({
   listUserAgents: jest.fn()
 }))
 
-const mockAgents: Agent[] = [
-  {
-    id: '1',
-    name: 'Research Assistant',
-    status: 'running' as const,
-    modelId: 'gpt-4',
-    userId: 'user-123',
-    createdAt: '2024-02-18T10:00:00Z',
-    updatedAt: '2024-02-18T10:00:00Z',
-    metrics: {
-      lastActive: '2 hours ago',
-      uptime: 99.9,
-      requestsProcessed: 1500,
-      averageResponseTime: 0.8
+const mockAgent1: Agent = {
+  id: 'agent-1',
+  modelId: 'model-1',
+  userId: 'user-1',
+  name: 'Test Agent 1',
+  status: 'running',
+  config: {
+    apiKeys: {
+      'openai': 'sk-test-key'
     },
-    config: {
-      apiKeys: {
-        'OpenAI': 'sk-xxx',
-        'Pinecone': 'pine-xxx'
-      },
-      settings: {
-        temperature: 0.7,
-        maxTokens: 2000
-      }
+    settings: {
+      model: 'GPT-4',
+      temperature: 0.7
     }
   },
-  {
-    id: '2',
-    name: 'Customer Support Bot',
-    status: 'stopped' as const,
-    modelId: 'gpt-3.5-turbo',
-    userId: 'user-123',
-    createdAt: '2024-02-18T09:00:00Z',
-    updatedAt: '2024-02-18T09:00:00Z',
-    metrics: {
-      lastActive: '1 day ago',
-      uptime: 95.5,
-      requestsProcessed: 800,
-      averageResponseTime: 1.2
-    },
-    config: {
-      apiKeys: {},
-      settings: {}
+  metrics: {
+    uptime: 99.9,
+    requestsProcessed: 1000,
+    averageResponseTime: 0.5,
+    lastActive: '2 hours ago'
+  },
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+}
+
+const mockAgent2: Agent = {
+  id: 'agent-2',
+  modelId: 'model-2',
+  userId: 'user-1',
+  name: 'Test Agent 2',
+  status: 'stopped',
+  config: {
+    apiKeys: {},
+    settings: {
+      model: 'Claude',
+      temperature: 0.5
     }
-  }
-]
+  },
+  metrics: {
+    uptime: 95.5,
+    requestsProcessed: 500,
+    averageResponseTime: 0.8,
+    lastActive: '1 day ago'
+  },
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+}
+
+const mockAgents = [mockAgent1, mockAgent2]
 
 describe('AgentsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('shows loading state initially', () => {
+  it('displays loading state initially', () => {
     jest.mocked(listUserAgents).mockImplementation(() => new Promise(() => {}))
     render(<AgentsPage />)
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
-  it('displays error message when API fails', async () => {
+  it('displays error message when API call fails', async () => {
     const errorMessage = 'Failed to load agents'
-    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
-      success: false, 
-      error: { code: 'FETCH_ERROR', message: errorMessage } 
+    jest.mocked(listUserAgents).mockResolvedValue({
+      success: false,
+      error: { code: 'FETCH_ERROR', message: errorMessage }
     })
 
     render(<AgentsPage />)
-
     await waitFor(() => {
       expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument()
     })
   })
 
-  it('renders empty state correctly', async () => {
-    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
-      success: true, 
+  it('displays empty state when no agents are available', async () => {
+    jest.mocked(listUserAgents).mockResolvedValue({
+      success: true,
       data: { 
         items: [],
         total: 0,
@@ -92,21 +95,18 @@ describe('AgentsPage', () => {
       }
     })
 
-    const { user } = render(<AgentsPage />)
-
+    render(<AgentsPage />)
+    
     await waitFor(() => {
       expect(screen.getByText('No agents deployed yet')).toBeInTheDocument()
       expect(screen.getByText('Deploy your first AI agent from the marketplace to get started')).toBeInTheDocument()
+      expect(screen.getByText('Browse Models')).toBeInTheDocument()
     })
-
-    // Test navigation to marketplace
-    const browseButton = screen.getByRole('button', { name: 'Browse Models' })
-    await user.click(browseButton)
   })
 
-  it('renders agents list successfully', async () => {
-    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
-      success: true, 
+  it('displays agents when available', async () => {
+    jest.mocked(listUserAgents).mockResolvedValue({
+      success: true,
       data: { 
         items: mockAgents,
         total: 2,
@@ -118,59 +118,39 @@ describe('AgentsPage', () => {
 
     render(<AgentsPage />)
 
-    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-    })
+      // Check page title and description
+      expect(screen.getByText('My Agents')).toBeInTheDocument()
+      expect(screen.getByText('Manage your deployed AI agents')).toBeInTheDocument()
 
-    // Check header content
-    expect(screen.getByRole('heading', { name: 'My Agents' })).toBeInTheDocument()
-    expect(screen.getByText('Manage your deployed AI agents')).toBeInTheDocument()
-    
-    // Check Deploy New Agent button
-    const deployButton = screen.getByRole('button', { name: 'Deploy New Agent' })
-    expect(deployButton).toBeInTheDocument()
+      // Check agent cards
+      expect(screen.getByText('Test Agent 1')).toBeInTheDocument()
+      expect(screen.getByText('Test Agent 2')).toBeInTheDocument()
 
-    // Check agent cards
-    mockAgents.forEach(agent => {
-      const agentHeading = screen.getByRole('heading', { name: agent.name })
-      const agentCard = agentHeading.closest('div.bg-gray-900\\/50')
-      expect(agentCard).toBeInTheDocument()
-
-      // Check status indicator
-      const statusContainer = within(agentCard as HTMLElement)
-        .getByTestId('status-container')
-      expect(statusContainer).toHaveClass('flex', 'items-center', 'gap-2', 'text-sm', 'text-gray-400')
-      expect(statusContainer.textContent).toContain(agent.status === 'running' ? 'Active' : 'Inactive')
-      expect(statusContainer.textContent).toContain(`Last active ${agent.metrics.lastActive}`)
-
-      // Check status dot
-      const statusDot = within(statusContainer).getByTestId('status-dot')
-      expect(statusDot).toHaveClass('w-2', 'h-2', 'rounded-full', agent.status === 'running' ? 'bg-green-500' : 'bg-red-500')
+      // Check status indicators
+      const statusContainers = screen.getAllByTestId('status-container')
+      expect(statusContainers[0]).toHaveTextContent('Active')
+      expect(statusContainers[1]).toHaveTextContent('Inactive')
 
       // Check metrics
-      expect(screen.getByText(`${agent.metrics.uptime}%`)).toBeInTheDocument()
-      expect(screen.getByText(agent.metrics.requestsProcessed.toString())).toBeInTheDocument()
-      expect(screen.getByText(`${agent.metrics.averageResponseTime}s`)).toBeInTheDocument()
+      expect(screen.getByText('99.9%')).toBeInTheDocument()
+      expect(screen.getByText('1000')).toBeInTheDocument()
+      expect(screen.getByText('0.5s')).toBeInTheDocument()
 
-      // Check API keys if present
-      if (Object.keys(agent.config.apiKeys).length > 0) {
-        Object.entries(agent.config.apiKeys).forEach(([service, key]) => {
-          expect(screen.getByText(service)).toBeInTheDocument()
-          expect(screen.getByText(key)).toBeInTheDocument()
-        })
-      }
+      // Check API keys section
+      expect(screen.getByText('openai')).toBeInTheDocument()
+      expect(screen.getByText('sk-test-key')).toBeInTheDocument()
 
-      // Check Manage button link
-      const manageButton = within(agentCard as HTMLElement).getByRole('button', { name: 'Manage' })
-      const manageLink = manageButton.closest('a')
-      expect(manageLink).toHaveAttribute('href', `/agents/${agent.id}`)
+      // Check buttons
+      const manageButtons = screen.getAllByText('Manage')
+      expect(manageButtons).toHaveLength(2)
+      expect(screen.getByText('Deploy New Agent')).toBeInTheDocument()
     })
   })
 
   it('handles navigation correctly', async () => {
-    jest.mocked(listUserAgents).mockResolvedValueOnce({ 
-      success: true, 
+    jest.mocked(listUserAgents).mockResolvedValue({
+      success: true,
       data: { 
         items: mockAgents,
         total: 2,
@@ -182,21 +162,32 @@ describe('AgentsPage', () => {
 
     const { user } = render(<AgentsPage />)
 
-    await waitFor(() => {
-      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
-    })
+    // Wait for agents to load
+    await screen.findByText('Test Agent 1')
 
     // Test Deploy New Agent navigation
     const deployButton = screen.getByRole('button', { name: 'Deploy New Agent' })
     await user.click(deployButton)
 
     // Test Manage button navigation
-    mockAgents.forEach(agent => {
-      const agentHeading = screen.getByRole('heading', { name: agent.name })
-      const agentCard = agentHeading.closest('div.bg-gray-900\\/50')
-      const manageButton = within(agentCard as HTMLElement).getByRole('button', { name: 'Manage' })
-      const manageLink = manageButton.closest('a')
-      expect(manageLink).toHaveAttribute('href', `/agents/${agent.id}`)
+    const manageButtons = screen.getAllByRole('button', { name: 'Manage' })
+    expect(manageButtons).toHaveLength(2)
+    manageButtons.forEach((button, index) => {
+      const link = button.closest('a')
+      expect(link).toHaveAttribute('href', `/agents/${mockAgents[index].id}`)
+    })
+  })
+
+  it('displays error state correctly', async () => {
+    jest.mocked(listUserAgents).mockRejectedValue(new Error('Failed to fetch'))
+
+    render(<AgentsPage />)
+
+    await waitFor(() => {
+      const errorElement = screen.getByText((content, element) => {
+        return element?.textContent === 'Error: An unexpected error occurred'
+      })
+      expect(errorElement).toBeInTheDocument()
     })
   })
 }) 

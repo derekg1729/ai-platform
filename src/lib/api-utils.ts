@@ -21,30 +21,44 @@ export class ApiError extends Error {
 export function createApiResponse<T>(
   data: T,
   statusCode: number = 200
-): NextResponse<ApiResponse<T>> {
-  return NextResponse.json(
-    {
-      success: true,
-      data,
-      timestamp: new Date().toISOString(),
-    },
-    { status: statusCode }
+): Response {
+  const response = {
+    success: true,
+    data,
+    timestamp: new Date().toISOString(),
+  }
+
+  return new Response(
+    JSON.stringify(response),
+    { 
+      status: statusCode,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }
   )
 }
 
 export function createErrorResponse(
   error: Error | ApiError,
   statusCode: number = 500
-): NextResponse<ApiResponse<never>> {
+): Response {
   const code = error instanceof ApiError ? error.statusCode : statusCode
   
-  return NextResponse.json(
-    {
-      success: false,
-      error: error.message,
-      timestamp: new Date().toISOString(),
-    },
-    { status: code }
+  const response = {
+    success: false,
+    error: error.message,
+    timestamp: new Date().toISOString(),
+  }
+
+  return new Response(
+    JSON.stringify(response),
+    { 
+      status: code,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }
   )
 }
 

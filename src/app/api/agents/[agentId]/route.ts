@@ -1,110 +1,106 @@
-import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { createApiResponse, createErrorResponse, ApiError } from '@/lib/api-utils'
+import { NextRequest, NextResponse } from 'next/server'
+import { AgentService } from '@/lib/services/agent-service'
+import { AgentRuntime } from '@/lib/services/agent-runtime'
+import { getUserIdFromRequest } from '@/lib/auth'
+import { ApiError } from '@/lib/api-utils'
+import { createApiResponse, createErrorResponse } from '@/lib/api-utils'
 
-interface RouteParams {
-  params: {
-    agentId: string
-  }
-}
-
-// Helper function to verify agent ownership
-async function verifyAgentOwnership(agentId: string, userId: string) {
-  const agent = await prisma.agent.findUnique({
-    where: { id: agentId },
-  })
-
-  if (!agent) {
-    throw new ApiError('Agent not found', 404, 'AGENT_NOT_FOUND')
-  }
-
-  if (agent.userId !== userId) {
-    throw new ApiError('Unauthorized access to agent', 403, 'FORBIDDEN')
-  }
-
-  return agent
-}
-
-// GET /api/agents/[agentId] - Get a specific agent
-export async function GET(request: NextRequest, { params }: RouteParams) {
+/**
+ * GET /api/agents/[agentId]
+ * Get a specific agent
+ */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { agentId: string } }
+) {
   try {
-    await prisma.$connect()
-    const userId = request.headers.get('x-user-id')
-    if (!userId) {
-      throw new ApiError('User ID is required', 401, 'UNAUTHORIZED')
-    }
-
-    await verifyAgentOwnership(params.agentId, userId)
-
-    const agent = await prisma.agent.findUnique({
-      where: { id: params.agentId },
-      include: {
-        model: true,
-      },
-    })
-
+    const userId = await getUserIdFromRequest(req)
+    const agent = await AgentService.getAgent(params.agentId, userId)
     return createApiResponse(agent)
   } catch (error) {
-    return createErrorResponse(error as Error)
-  } finally {
-    await prisma.$disconnect()
+    if (error instanceof Error) {
+      return createErrorResponse(error)
+    }
+    return createErrorResponse(new Error('Unknown error occurred'))
   }
 }
 
-// PATCH /api/agents/[agentId] - Update an agent
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+/**
+ * PATCH /api/agents/[agentId]
+ * Update a specific agent
+ */
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { agentId: string } }
+) {
   try {
-    await prisma.$connect()
-    const userId = request.headers.get('x-user-id')
-    if (!userId) {
-      throw new ApiError('User ID is required', 401, 'UNAUTHORIZED')
-    }
+    const userId = await getUserIdFromRequest(req)
+    const data = await req.json()
 
-    await verifyAgentOwnership(params.agentId, userId)
-    const data = await request.json()
-
-    // Update the agent
-    const agent = await prisma.agent.update({
-      where: { id: params.agentId },
-      data: {
-        name: data.name,
-        status: data.status,
-        config: data.config,
-        metrics: data.metrics,
-      },
-      include: {
-        model: true,
-      },
-    })
-
+    const agent = await AgentService.updateAgent(params.agentId, userId, data)
     return createApiResponse(agent)
   } catch (error) {
-    return createErrorResponse(error as Error)
-  } finally {
-    await prisma.$disconnect()
+    if (error instanceof Error) {
+      return createErrorResponse(error)
+    }
+    return createErrorResponse(new Error('Unknown error occurred'))
   }
 }
 
-// DELETE /api/agents/[agentId] - Delete an agent
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+/**
+ * DELETE /api/agents/[agentId]
+ * Delete a specific agent
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { agentId: string } }
+) {
   try {
-    await prisma.$connect()
-    const userId = request.headers.get('x-user-id')
-    if (!userId) {
-      throw new ApiError('User ID is required', 401, 'UNAUTHORIZED')
-    }
-
-    await verifyAgentOwnership(params.agentId, userId)
-
-    // Delete the agent
-    await prisma.agent.delete({
-      where: { id: params.agentId },
-    })
-
-    return createApiResponse({ message: 'Agent deleted successfully' })
+    const userId = await getUserIdFromRequest(req)
+    await AgentService.deleteAgent(params.agentId, userId)
+    return new NextResponse(null, { status: 204 })
   } catch (error) {
-    return createErrorResponse(error as Error)
-  } finally {
-    await prisma.$disconnect()
+    if (error instanceof Error) {
+      return createErrorResponse(error)
+    }
+    return createErrorResponse(new Error('Unknown error occurred'))
+  }
+}
+
+/**
+ * POST /api/agents/[agentId]/start
+ * Start a specific agent
+ */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { agentId: string } }
+) {
+  try {
+    const userId = await getUserIdFromRequest(req)
+    const url = new URL(req.url)
+    const action = url.pathname.split('/').pop()
+
+    switch (action) {
+      case 'start':
+        await AgentRuntime.startAgent(params.agentId, userId)
+        return createApiResponse({ status: 'started' })
+
+      case 'stop':
+        await AgentRuntime.stopAgent(params.agentId, userId)
+        return createApiResponse({ status: 'stopped' })
+
+      case 'process':
+        const request = await req.json()
+        const response = await AgentRuntime.processRequest(params.agentId, request)
+        return createApiResponse(response)
+
+      default:
+        throw new ApiError(`Invalid action: ${action}`, 400, 'INVALID_ACTION')
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      return createErrorResponse(error)
+    }
+    return createErrorResponse(new Error('Unknown error occurred'))
   }
 } 

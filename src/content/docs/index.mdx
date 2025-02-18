@@ -1,6 +1,6 @@
-# Documentation
+# AI Agent Hub
 
-Welcome to the AI Platform documentation.
+Welcome to the AI Agent Hub - a powerful platform for building, deploying, and managing AI agents as standardized microservices.
 
 ## Quick Links
 - [Getting Started](/docs/getting-started)
@@ -8,38 +8,23 @@ Welcome to the AI Platform documentation.
 - [API Reference](/docs/api-reference)
 - [Testing](/docs/core-concepts/testing)
 
-## Sections
-
-### Getting Started
-- Installation & setup
-- Basic usage
-
-### Core Concepts
-- Architecture
-- Models & Agents
-- Testing
-
-### API Reference
-- REST API
-- WebSocket events
-- SDK docs
-
-### Testing
-- Testing stack
-- Best practices
-- Examples
-
-## Support
-Check docs → Search issues → Create issue
-
-## License
-MIT License
-
-# Introduction
+## Overview
 
 AI Agent Hub enables platform developers to build and ship AI models as standardized microservices, while allowing users to browse, deploy, and manage personalized agent instances.
 
-## Quick Start
+### For Platform Developers
+- Build and ship AI models as standardized services
+- Define clear API contracts and documentation
+- Monitor usage and performance metrics
+- Standardized testing and deployment workflows
+
+### For Platform Users
+- Browse and discover AI models in the marketplace
+- Deploy personalized agent instances
+- Connect agents with third-party services
+- Monitor agent performance and usage
+
+## Getting Started
 
 1. Clone and install:
 ```bash
@@ -48,49 +33,46 @@ cd ai-platform
 npm install
 ```
 
-2. Start development server:
+2. Set up the database:
+```bash
+# Create a PostgreSQL database
+createdb ai_platform
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database credentials
+
+# Run migrations
+npx prisma migrate dev
+```
+
+3. Start development server:
 ```bash
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000)
-
-## Key Features
-
-- **Model Marketplace**: Browse and discover AI models
-- **Agent Management**: Deploy and configure personal agent instances
-- **API Integration**: Connect agents with third-party services
-- **Usage Analytics**: Monitor performance and usage metrics
-
-## Who is it for?
-
-### Platform Developers
-- Build and ship AI models as standardized services
-- Define clear API contracts and documentation
-- Monitor usage and performance
-
-### Platform Users
-- Browse and discover AI models
-- Deploy personalized agent instances
-- Connect agents with third-party services
-
-## Project Status
-
-Currently in Designer Mode with a fully functional UI prototype. The project includes:
-
-- ✅ UI mockup
-- ✅ Type definitions and interfaces
-- ✅ Mock data structures and API responses
-- ✅ Implementation tracking for Builder Mode transition
-- ⚠️ Backend functionality (coming soon)
+4. Open [http://localhost:3000](http://localhost:3000)
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **UI Components**: Modern, accessible components
-- **Theme**: Dark mode with consistent styling
+### Frontend
+- Next.js 14 with App Router
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+- Jest + React Testing Library
+
+### Backend
+- Rust
+- Actix-web
+- Prisma
+- PostgreSQL
+
+### Testing
+- Jest
+- React Testing Library
+- Integration tests
+- End-to-end tests
 
 ## Project Structure
 
@@ -102,22 +84,22 @@ src/
 │   │   ├── marketplace/   # Model marketplace
 │   │   ├── analytics/     # Usage statistics
 │   │   └── docs/          # Documentation
-│   └── (auth)/            # Authentication routes
+│   └── api/               # API routes
 ├── components/            # Reusable UI components
-├── lib/                   # Utilities (mocked)
-└── types/                 # TypeScript definitions
+├── lib/                   # Utilities and services
+│   ├── api/              # API client functions
+│   ├── services/         # Business logic
+│   ├── validation/       # Schema validation
+│   └── utils/            # Helper functions
+├── types/                # TypeScript definitions
+└── __tests__/           # Test files
+    ├── unit/            # Unit tests
+    ├── integration/     # Integration tests
+    └── setup/           # Test setup files
 ```
 
-## Exploring the Prototype
 
-1. **Browse Models**
-   - Visit the marketplace to see available AI models
-   - Explore model details and capabilities
 
-2. **View Agents**
-   - View specific agent instances and their data
-   - Configure mock API keys and settings
+## License
 
-3. **Documentation**
-   - Read about [Core Concepts](/docs/core-concepts)
-   - Explore the [API Reference](/docs/api-reference)
+MIT License - see LICENSE for more details.

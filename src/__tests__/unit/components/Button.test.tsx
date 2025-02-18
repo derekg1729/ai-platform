@@ -1,4 +1,5 @@
-import { render, screen } from '@/__tests__/setup/test-utils'
+import React from 'react'
+import { render, screen } from '../../../__tests__/setup/test-utils'
 import { Button } from '@/components/ui/button'
 
 describe('Button', () => {
@@ -21,17 +22,25 @@ describe('Button', () => {
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
 
-  it('can be disabled', () => {
-    render(<Button disabled>Click me</Button>)
-    
+  it('can be disabled', async () => {
+    const handleClick = jest.fn()
+    const { user } = render(
+      <Button disabled onClick={handleClick}>
+        Click me
+      </Button>
+    )
+
     const button = screen.getByRole('button', { name: /click me/i })
+    await user.click(button)
+
+    expect(handleClick).not.toHaveBeenCalled()
     expect(button).toBeDisabled()
   })
 
   it('renders with variant styles', () => {
-    render(<Button variant="destructive">Delete</Button>)
+    render(<Button variant="secondary">Click me</Button>)
     
-    const button = screen.getByRole('button', { name: /delete/i })
-    expect(button).toHaveClass('bg-destructive')
+    const button = screen.getByRole('button', { name: /click me/i })
+    expect(button).toHaveClass('bg-secondary')
   })
 }) 

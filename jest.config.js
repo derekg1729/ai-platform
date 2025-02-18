@@ -7,13 +7,20 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup/jest.setup.ts'],
+  setupFilesAfterEnv: [
+    process.env.TEST_TYPE === 'backend'
+      ? '<rootDir>/src/__tests__/setup/jest.backend.setup.ts'
+      : '<rootDir>/src/__tests__/setup/jest.frontend.setup.ts'
+  ],
   testEnvironment: process.env.TEST_TYPE === 'backend' ? 'node' : 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testMatch: [
     '<rootDir>/src/__tests__/**/*.test.{js,jsx,ts,tsx}'
+  ],
+  transformIgnorePatterns: [
+    '/node_modules/(?!node-fetch|data-uri-to-buffer|fetch-blob|formdata-polyfill).+\\.js$'
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',

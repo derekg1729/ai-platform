@@ -32,8 +32,15 @@ describe('AgentDetails Component', () => {
     jest.clearAllMocks()
   })
 
-  it('shows loading state initially', () => {
-    render(<AgentDetails agentId="test-agent-1" />)
+  it('shows loading state initially', async () => {
+    // Mock API calls to resolve after a delay
+    jest.mocked(getAgent).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+    jest.mocked(getModel).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+
+    await act(async () => {
+      render(<AgentDetails agentId="test-agent-1" />)
+    })
+
     const spinner = screen.getByText('', { 
       selector: 'div.animate-spin.rounded-full.h-8.w-8.border-t-2.border-b-2.border-purple-500'
     })
@@ -47,7 +54,9 @@ describe('AgentDetails Component', () => {
       error: { code: 'FETCH_ERROR', message: errorMessage } 
     })
 
-    render(<AgentDetails agentId="test-agent-1" />)
+    await act(async () => {
+      render(<AgentDetails agentId="test-agent-1" />)
+    })
 
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument()
@@ -64,7 +73,9 @@ describe('AgentDetails Component', () => {
       error: { code: 'FETCH_ERROR', message: 'Failed to load model' } 
     })
 
-    render(<AgentDetails agentId="test-agent-1" />)
+    await act(async () => {
+      render(<AgentDetails agentId="test-agent-1" />)
+    })
 
     await waitFor(() => {
       expect(screen.getByText('Failed to load model')).toBeInTheDocument()
@@ -81,7 +92,9 @@ describe('AgentDetails Component', () => {
       data: modelFixture 
     })
 
-    render(<AgentDetails agentId="test-agent-1" />)
+    await act(async () => {
+      render(<AgentDetails agentId="test-agent-1" />)
+    })
 
     await waitFor(() => {
       // Check name and description
@@ -131,7 +144,11 @@ describe('AgentDetails Component', () => {
         data: modelFixture 
       })
 
-    const { rerender } = render(<AgentDetails agentId="test-agent-1" />)
+    let rerender: (ui: React.ReactElement) => void
+    await act(async () => {
+      const result = render(<AgentDetails agentId="test-agent-1" />)
+      rerender = result.rerender
+    })
 
     // Check running status
     await waitFor(() => {
@@ -161,15 +178,15 @@ describe('AgentDetails Component', () => {
       data: modelFixture 
     })
 
-    render(<AgentDetails agentId="test-agent-1" />)
+    await act(async () => {
+      render(<AgentDetails agentId="test-agent-1" />)
+    })
 
-    // Wait for component to load and button to be available
     await waitFor(() => {
       expect(screen.queryByTestId('loading-spinner')).not.toBeInTheDocument()
       expect(screen.getByText('Stop Agent')).toBeInTheDocument()
     })
 
-    // Find and click the button
     const button = screen.getByText('Stop Agent')
     await act(async () => {
       fireEvent.click(button)
@@ -186,7 +203,9 @@ describe('AgentDetails Component', () => {
       data: modelFixture 
     })
 
-    render(<AgentDetails agentId="test-agent-1" />)
+    await act(async () => {
+      render(<AgentDetails agentId="test-agent-1" />)
+    })
 
     await waitFor(() => {
       // Check configured status

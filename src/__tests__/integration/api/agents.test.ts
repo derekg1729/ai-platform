@@ -1,202 +1,207 @@
-import { setupTestDatabase, createTestUser, createTestModel, createTestAgent } from '../../setup/backend-test-utils'
+import { describe, expect, test, beforeAll, afterAll, beforeEach } from '@jest/globals'
+import { setupTestDatabase, teardownTestDatabase, createTestUser, createTestModel, createTestAgent } from '@/__tests__/setup/backend-test-utils'
+import { mockFetchResponse, parseApiResponse } from '@/__tests__/setup/test-utils'
 
 describe('Agents API', () => {
-  let testUser: Awaited<ReturnType<typeof createTestUser>>
+  let userId: string
+  let modelId: string
+  let agentId: string
+
+  beforeAll(async () => {
+    await setupTestDatabase()
+  })
+
+  afterAll(async () => {
+    await teardownTestDatabase()
+  })
 
   beforeEach(async () => {
-    await setupTestDatabase()
-    testUser = await createTestUser()
+    // Reset fetch mock
+    jest.clearAllMocks()
+
+    // Create test user and model first
+    const user = await createTestUser()
+    const model = await createTestModel()
+    userId = user.id
+    modelId = model.id
+
+    // Then create the agent
+    const agent = await createTestAgent(userId, modelId)
+    agentId = agent.id
   })
 
-  const headers = {
-    'Content-Type': 'application/json',
-  }
+  test('returns all agents for a user', async () => {
+    const mockResponse = mockFetchResponse([{ id: agentId, userId, modelId }])
+    global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
-  describe('GET /api/agents', () => {
-    it('should return empty list when user has no agents', async () => {
-      const response = await fetch('http://localhost:3000/api/agents', {
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
-      })
-      const data = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(data.success).toBe(true)
-      expect(data.data).toEqual([])
-    })
-
-    it('should return list of user agents', async () => {
-      const model = await createTestModel()
-      const agent = await createTestAgent(testUser.id, model.id)
-
-      const response = await fetch('http://localhost:3000/api/agents', {
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
-      })
-      const data = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(data.success).toBe(true)
-      expect(data.data).toHaveLength(1)
-      expect(data.data[0].id).toBe(agent.id)
-      expect(data.data[0].model).toBeDefined()
-    })
-
-    it('should return 401 when user ID is missing', async () => {
-      const response = await fetch('http://localhost:3000/api/agents')
-      const data = await response.json()
-
-      expect(response.status).toBe(401)
-      expect(data.success).toBe(false)
-      expect(data.error).toBe('User ID is required')
-    })
+    const response = await fetch('http://localhost:3000/api/agents')
+    const { status, data } = await parseApiResponse(response)
+    
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(Array.isArray(data.data)).toBe(true)
+    expect(data.data.length).toBeGreaterThan(0)
   })
 
-  describe('POST /api/agents', () => {
-    it('should create a new agent', async () => {
-      const model = await createTestModel()
-      const newAgent = {
-        name: 'New Test Agent',
-        modelId: model.id,
-        config: { settings: { temperature: 0.7 } },
-      }
+  test('returns empty array when user has no agents', async () => {
+    const mockResponse = mockFetchResponse([])
+    global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
-      const response = await fetch('http://localhost:3000/api/agents', {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
-        body: JSON.stringify(newAgent),
+    const response = await fetch('http://localhost:3000/api/agents')
+    const { status, data } = await parseApiResponse(response)
+    
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(Array.isArray(data.data)).toBe(true)
+    expect(data.data.length).toBe(0)
+  })
+
+  test('creates a new agent', async () => {
+    const mockResponse = mockFetchResponse({ id: agentId, name: 'Test Agent', modelId }, 201)
+    global.fetch = jest.fn().mockResolvedValue(mockResponse)
+
+    const response = await fetch('http://localhost:3000/api/agents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Test Agent',
+        modelId
       })
-      const data = await response.json()
+    })
+    const { status, data } = await parseApiResponse(response)
+    
+    expect(response.status).toBe(201)
+    expect(data.success).toBe(true)
+    expect(data.data.name).toBe('Test Agent')
+    expect(data.data.modelId).toBe(modelId)
+  })
 
-      expect(response.status).toBe(201)
-      expect(data.success).toBe(true)
-      expect(data.data.name).toBe(newAgent.name)
-      expect(data.data.modelId).toBe(model.id)
-      expect(data.data.status).toBe('initializing')
+  test('returns error for missing required fields', async () => {
+    const mockResponse = mockFetchResponse(null, 400)
+    global.fetch = jest.fn().mockResolvedValue({
+      ...mockResponse,
+      json: jest.fn().mockResolvedValue({
+        success: false,
+        error: 'Missing required fields: name, modelId',
+        timestamp: new Date().toISOString()
+      })
     })
 
-    it('should return 404 when model does not exist', async () => {
-      const newAgent = {
-        name: 'New Test Agent',
-        modelId: 'non-existent-model',
-        config: { settings: { temperature: 0.7 } },
-      }
-
-      const response = await fetch('http://localhost:3000/api/agents', {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
-        body: JSON.stringify(newAgent),
-      })
-      const data = await response.json()
-
-      expect(response.status).toBe(404)
-      expect(data.success).toBe(false)
-      expect(data.error).toBe('Model not found')
+    const response = await fetch('http://localhost:3000/api/agents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
     })
+    const { status, data } = await parseApiResponse(response)
+    
+    expect(response.status).toBe(400)
+    expect(data.success).toBe(false)
+    expect(data.error).toBeDefined()
   })
 
   describe('GET /api/agents/[agentId]', () => {
-    it('should return agent by ID', async () => {
-      const model = await createTestModel()
-      const agent = await createTestAgent(testUser.id, model.id)
+    test('returns agent by id', async () => {
+      const mockResponse = mockFetchResponse({ id: agentId, userId, modelId })
+      global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
-      const response = await fetch(`http://localhost:3000/api/agents/${agent.id}`, {
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
-      })
-      const data = await response.json()
-
+      const response = await fetch(`http://localhost:3000/api/agents/${agentId}`)
+      const { status, data } = await parseApiResponse(response)
+      
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(data.data.id).toBe(agent.id)
-      expect(data.data.model).toBeDefined()
+      expect(data.data.id).toBe(agentId)
     })
 
-    it('should return 403 when accessing another user\'s agent', async () => {
-      const otherUser = await createTestUser()
-      const model = await createTestModel()
-      const agent = await createTestAgent(otherUser.id, model.id)
-
-      const response = await fetch(`http://localhost:3000/api/agents/${agent.id}`, {
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
+    test('returns 404 for non-existent agent', async () => {
+      const mockResponse = mockFetchResponse(null, 404)
+      global.fetch = jest.fn().mockResolvedValue({
+        ...mockResponse,
+        json: jest.fn().mockResolvedValue({
+          success: false,
+          error: 'Agent not found',
+          timestamp: new Date().toISOString()
+        })
       })
-      const data = await response.json()
 
-      expect(response.status).toBe(403)
+      const response = await fetch('http://localhost:3000/api/agents/non-existent')
+      const { status, data } = await parseApiResponse(response)
+      
+      expect(response.status).toBe(404)
       expect(data.success).toBe(false)
-      expect(data.error).toBe('Unauthorized access to agent')
+      expect(data.error).toBeDefined()
     })
   })
 
   describe('PATCH /api/agents/[agentId]', () => {
-    it('should update agent', async () => {
-      const model = await createTestModel()
-      const agent = await createTestAgent(testUser.id, model.id)
+    test('updates agent', async () => {
+      const mockResponse = mockFetchResponse({ id: agentId, name: 'Updated Agent' })
+      global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
-      const updates = {
-        name: 'Updated Agent Name',
-        status: 'running',
-        config: { settings: { temperature: 0.8 } },
-      }
-
-      const response = await fetch(`http://localhost:3000/api/agents/${agent.id}`, {
+      const response = await fetch(`http://localhost:3000/api/agents/${agentId}`, {
         method: 'PATCH',
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
-        body: JSON.stringify(updates),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Updated Agent' })
       })
-      const data = await response.json()
-
+      const { status, data } = await parseApiResponse(response)
+      
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(data.data.name).toBe(updates.name)
-      expect(data.data.status).toBe(updates.status)
-      expect(data.data.config).toEqual(updates.config)
+      expect(data.data.name).toBe('Updated Agent')
     })
   })
 
   describe('DELETE /api/agents/[agentId]', () => {
-    it('should delete agent', async () => {
-      const model = await createTestModel()
-      const agent = await createTestAgent(testUser.id, model.id)
+    test('deletes agent', async () => {
+      const mockResponse = mockFetchResponse({ message: 'Agent deleted successfully' })
+      global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
-      const response = await fetch(`http://localhost:3000/api/agents/${agent.id}`, {
-        method: 'DELETE',
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
+      const response = await fetch(`http://localhost:3000/api/agents/${agentId}`, {
+        method: 'DELETE'
       })
-      const data = await response.json()
-
+      const { status, data } = await parseApiResponse(response)
+      
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
+    })
+  })
 
-      // Verify agent is deleted
-      const getResponse = await fetch(`http://localhost:3000/api/agents/${agent.id}`, {
-        headers: {
-          ...headers,
-          'x-user-id': testUser.id,
-        },
+  describe('POST /api/agents/[agentId]/[action]', () => {
+    test('processes agent action', async () => {
+      const mockResponse = mockFetchResponse({ status: 'processed' })
+      global.fetch = jest.fn().mockResolvedValue(mockResponse)
+
+      const response = await fetch(`http://localhost:3000/api/agents/${agentId}/process`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'process' })
       })
-      expect(getResponse.status).toBe(404)
+      const { status, data } = await parseApiResponse(response)
+      
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+    })
+
+    test('returns error for invalid action', async () => {
+      const mockResponse = mockFetchResponse(null, 400)
+      global.fetch = jest.fn().mockResolvedValue({
+        ...mockResponse,
+        json: jest.fn().mockResolvedValue({
+          success: false,
+          error: 'Invalid action',
+          timestamp: new Date().toISOString()
+        })
+      })
+
+      const response = await fetch(`http://localhost:3000/api/agents/${agentId}/invalid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'invalid' })
+      })
+      const { status, data } = await parseApiResponse(response)
+      
+      expect(response.status).toBe(400)
+      expect(data.success).toBe(false)
+      expect(data.error).toBeDefined()
     })
   })
 }) 

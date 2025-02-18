@@ -9,19 +9,18 @@ async function generateReadme() {
     const introContent = fs.readFileSync(introPath, 'utf-8');
     const { content: introMarkdown } = matter(introContent);
 
-    // Extract the getting started section from the intro content
-    const gettingStartedSection = introMarkdown.split('## Getting Started')[1]?.split('##')[0]?.trim() || '';
+    // Remove any duplicate headers and sections
+    const cleanedContent = introMarkdown
+      .replace(/^# AI Agent Hub\n+/, '') // Remove the first title
+      .replace(/^## Documentation\n+.*$/m, '') // Remove the Documentation section
+      .replace(/^## License\n+.*$/m, ''); // Remove any License sections
 
     const readmeContent = `# AI Agent Hub
 
 > ⚠️ This README is auto-generated from the documentation in \`src/content/docs\`. Please edit the source files instead.
 > To regenerate this file, run: \`npx ts-node scripts/generate-docs.ts\`
 
-${introMarkdown.split('## Getting Started')[0].trim()}
-
-## Getting Started
-
-${gettingStartedSection}
+${cleanedContent}
 
 ## Documentation
 
@@ -33,7 +32,7 @@ MIT License - see LICENSE for more details.
 `;
 
     // Write the README.md file
-    fs.writeFileSync('README.md', readmeContent);
+    fs.writeFileSync('README.md', readmeContent.trim() + '\n');
     console.log('✅ README.md has been generated successfully!');
   } catch (error) {
     console.error('Error generating README:', error);

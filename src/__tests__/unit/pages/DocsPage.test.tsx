@@ -1,4 +1,5 @@
-import { render, screen } from '@/__tests__/setup/test-utils'
+import React from 'react'
+import { render, screen } from '../../../__tests__/setup/test-utils'
 import DocsPage from '@/app/(routes)/docs/page'
 
 // Define mocks before component definitions
@@ -26,6 +27,25 @@ jest.mock('@/content/docs/core-concepts/testing.mdx', () => {
   return TestingComponent
 })
 
+const tabs = [
+  {
+    name: 'Introduction',
+    content: 'Introduction Content',
+  },
+  {
+    name: 'Core Concepts',
+    content: 'Core Concepts Content',
+  },
+  {
+    name: 'API Reference',
+    content: 'API Reference Content',
+  },
+  {
+    name: 'Testing',
+    content: 'Testing Content',
+  },
+]
+
 describe('DocsPage', () => {
   it('renders documentation page correctly', () => {
     render(<DocsPage />)
@@ -51,17 +71,22 @@ describe('DocsPage', () => {
     expect(screen.getByText('Introduction Content')).toBeInTheDocument()
   })
 
+  it('renders documentation tabs correctly', () => {
+    render(<DocsPage />)
+
+    // Check if all tabs are rendered
+    tabs.forEach(tab => {
+      expect(screen.getByRole('tab', { name: tab.name })).toBeInTheDocument()
+    })
+
+    // Check if first tab content is visible by default
+    expect(screen.getByText('Introduction Content')).toBeInTheDocument()
+  })
+
   it('switches content when tabs are clicked', async () => {
     const { user } = render(<DocsPage />)
 
-    // Click each tab and verify content changes
-    const tabs = [
-      { name: 'Core Concepts', content: 'Core Concepts Content' },
-      { name: 'API Reference', content: 'API Reference Content' },
-      { name: 'Testing', content: 'Testing Content' },
-      { name: 'Introduction', content: 'Introduction Content' }
-    ]
-
+    // Test clicking each tab
     for (const tab of tabs) {
       const tabElement = screen.getByRole('tab', { name: tab.name })
       await user.click(tabElement)
@@ -88,16 +113,10 @@ describe('DocsPage', () => {
   it('has responsive layout', () => {
     render(<DocsPage />)
 
-    // Check container has responsive classes
-    const rootContainer = screen.getByRole('heading', { name: 'Documentation' }).closest('div.container')
-    expect(rootContainer).toHaveClass('container', 'mx-auto', 'px-4', 'py-8')
-
-    // Check inner container
-    const innerContainer = screen.getByRole('heading', { name: 'Documentation' }).closest('div.max-w-4xl')
-    expect(innerContainer).toHaveClass('max-w-4xl', 'mx-auto')
-
-    // Check tabs list styling
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass('bg-gray-900/50', 'border', 'border-gray-700/50', 'h-12')
+    expect(tabsList).toHaveClass('inline-flex', 'items-center', 'justify-center', 'rounded-lg')
+
+    const tabPanel = screen.getByRole('tabpanel')
+    expect(tabPanel).toHaveClass('mt-2')
   })
 }) 

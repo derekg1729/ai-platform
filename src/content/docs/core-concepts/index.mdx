@@ -6,33 +6,191 @@ AI Agent Hub consists of three main components: Platform App, AI Models, and Age
 
 The central hub where developers and users interact with AI models and agents.
 
+### Frontend Features
 - Browse available models
 - Deploy personal agents
 - Configure API connections
 - Monitor performance
 
+### Backend Architecture
+
+#### API Layer
+- RESTful endpoints for models and agents
+- Standardized response format
+- Error handling and validation
+- Authentication and authorization
+
+#### Database Layer
+- PostgreSQL for persistent storage
+- Prisma ORM for type-safe queries
+- Efficient relation handling
+- Transaction support
+
+#### Service Layer
+- Business logic separation
+- Model validation services
+- Agent lifecycle management
+- Resource monitoring
 
 ## AI Models
 
 Blueprints that define how an agent behaves:
+
+### Model Definition
 - Standardized API contract
 - Input/output specifications
 - Required API connections
 - Deployment configuration
 - Pricing structure
 
+### Model Validation
+- Semantic versioning
+- Category validation
+- Capability verification
+- API specification checks
+
+### Model Lifecycle
+1. Submission
+2. Validation
+3. Publication
+4. Version Management
+5. Deprecation
+
 ## Agent Instances
 
 Personalized deployments of AI Models with:
-- Custom API keys and settings
-- Usage metrics
-- Health monitoring
-- Log management
 
-### Lifecycle
-1. Deploy: Select model to deploy
-2. Configure: Set up API keys
-3. Activate: Start the instance
-4. Monitor: Track performance
-5. Update: Receive model updates
+### Configuration
+- Custom API keys and settings
+- Environment variables
+- Resource allocation
+- Network policies
+
+### Monitoring
+- Health checks
+- Performance metrics
+- Resource usage
+- Error tracking
+
+### State Management
+- Status tracking
+- Metrics collection
+- Configuration updates
+- Resource cleanup
+
+### Lifecycle Stages
+1. **Deploy**: 
+   - Select model to deploy
+   - Validate requirements
+   - Initialize resources
+
+2. **Configure**: 
+   - Set up API keys
+   - Configure settings
+   - Validate connections
+
+3. **Activate**: 
+   - Start the instance
+   - Initialize runtime
+   - Begin monitoring
+
+4. **Monitor**: 
+   - Track performance
+   - Collect metrics
+   - Handle errors
+   - Scale resources
+
+5. **Update**: 
+   - Receive model updates
+   - Migrate configurations
+   - Handle version changes
+
+## Backend Services
+
+### Model Service
+- Model CRUD operations
+- Version management
+- Category organization
+- Capability tracking
+
+### Agent Service
+- Agent lifecycle management
+- Configuration handling
+- Resource provisioning
+- State management
+
+### Runtime Service
+- Process management
+- Resource allocation
+- Health monitoring
+- Error handling
+
+### Validation Service
+- Input validation
+- Schema verification
+- API compatibility
+- Security checks
+
+## Data Models
+
+### User
+```prisma
+model User {
+  id        String   @id
+  name      String
+  email     String   @unique
+  role      String
+  agents    Agent[]
+}
+```
+
+### Model
+```prisma
+model Model {
+  id           String   @id
+  name         String
+  version      String
+  category     String
+  capabilities String[]
+  apiSpec      Json
+  pricing      Json
+  stats        Json
+  agents       Agent[]
+}
+```
+
+### Agent
+```prisma
+model Agent {
+  id        String   @id
+  name      String
+  status    String
+  modelId   String
+  userId    String
+  config    Json
+  metrics   Json
+  model     Model    @relation
+  user      User     @relation
+}
+```
+
+## Security
+
+### Authentication
+- User identification
+- API key management
+- Session handling
+- Token validation
+
+### Authorization
+- Role-based access
+- Resource ownership
+- Permission checks
+- Audit logging
+
+### Data Protection
+- Input sanitization
+- Output encoding
+- Encryption at rest
+- Secure communication
 

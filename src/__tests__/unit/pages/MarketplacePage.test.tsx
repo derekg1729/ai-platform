@@ -1,3 +1,4 @@
+import React from 'react'
 import { render, screen, waitFor, within } from '@/__tests__/setup/test-utils'
 import MarketplacePage from '@/app/(routes)/marketplace/page'
 import { listModels } from '@/lib/api/agents'

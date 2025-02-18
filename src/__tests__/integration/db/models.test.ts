@@ -29,6 +29,11 @@ describe('Database Models', () => {
         input: { type: 'string' },
         output: { type: 'string' },
       })
+      expect(model.stats).toEqual({
+        rating: 5,
+        reviews: 0,
+        deployments: 0
+      })
     })
   })
 
@@ -49,9 +54,15 @@ describe('Database Models', () => {
       expect(agentWithRelations).toBeDefined()
       expect(agentWithRelations?.user.id).toBe(user.id)
       expect(agentWithRelations?.model.id).toBe(model.id)
-      expect(agentWithRelations?.status).toBe('active')
+      expect(agentWithRelations?.status).toBe('initializing')
       expect(agentWithRelations?.config).toEqual({
-        settings: { temperature: 0.7 },
+        settings: { temperature: 0.7 }
+      })
+      expect(agentWithRelations?.metrics).toEqual({
+        lastActive: expect.any(String),
+        uptime: 0,
+        requestsProcessed: 0,
+        averageResponseTime: 0
       })
     })
   })
