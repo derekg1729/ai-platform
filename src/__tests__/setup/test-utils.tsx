@@ -1,11 +1,25 @@
 import { render as rtlRender, RenderOptions } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+
+const createMockRouter = (options = {}) => ({
+  push: jest.fn(),
+  replace: jest.fn(),
+  refresh: jest.fn(),
+  prefetch: jest.fn(),
+  back: jest.fn(),
+  forward: jest.fn(),
+  ...options
+})
 
 // Add any providers here
 function Providers({ children }: { children: React.ReactNode }) {
+  const mockRouter = createMockRouter()
+
   return (
-    // We can add providers as needed
-    <>{children}</>
+    <AppRouterContext.Provider value={mockRouter}>
+      {children}
+    </AppRouterContext.Provider>
   )
 }
 

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@/__tests__/setup/test-utils'
+import { render, screen } from '@/__tests__/setup/test-utils'
 import AnalyticsPage from '@/app/(routes)/analytics/page'
 
 describe('AnalyticsPage', () => {

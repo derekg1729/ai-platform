@@ -2,7 +2,6 @@ import { screen, fireEvent, act } from '@testing-library/react'
 import { useRouter } from 'next/navigation'
 import { NavBar } from '@/components/NavBar'
 import { render } from '@/__tests__/setup/test-utils'
-import { waitFor } from '@testing-library/react'
 
 // Mock the useRouter hook
 const mockPush = jest.fn()

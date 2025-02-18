@@ -1,11 +1,30 @@
 import { render, screen } from '@/__tests__/setup/test-utils'
 import DocsPage from '@/app/(routes)/docs/page'
 
-// Mock MDX components
-jest.mock('@/content/docs/index.mdx', () => () => <div>Introduction Content</div>)
-jest.mock('@/content/docs/core-concepts/index.mdx', () => () => <div>Core Concepts Content</div>)
-jest.mock('@/content/docs/api-reference/index.mdx', () => () => <div>API Reference Content</div>)
-jest.mock('@/content/docs/core-concepts/testing.mdx', () => () => <div>Testing Content</div>)
+// Define mocks before component definitions
+jest.mock('@/content/docs/index.mdx', () => {
+  const IntroComponent = () => <div>Introduction Content</div>
+  IntroComponent.displayName = 'IntroMDX'
+  return IntroComponent
+})
+
+jest.mock('@/content/docs/core-concepts/index.mdx', () => {
+  const CoreConceptsComponent = () => <div>Core Concepts Content</div>
+  CoreConceptsComponent.displayName = 'CoreConceptsMDX'
+  return CoreConceptsComponent
+})
+
+jest.mock('@/content/docs/api-reference/index.mdx', () => {
+  const ApiReferenceComponent = () => <div>API Reference Content</div>
+  ApiReferenceComponent.displayName = 'ApiReferenceMDX'
+  return ApiReferenceComponent
+})
+
+jest.mock('@/content/docs/core-concepts/testing.mdx', () => {
+  const TestingComponent = () => <div>Testing Content</div>
+  TestingComponent.displayName = 'TestingMDX'
+  return TestingComponent
+})
 
 describe('DocsPage', () => {
   it('renders documentation page correctly', () => {
