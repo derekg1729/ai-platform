@@ -1,24 +1,19 @@
 import { PrismaClient } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { v4 as uuidv4 } from 'uuid'
 
 // Create a singleton instance for tests
 const testPrisma = prisma
 
 export async function clearDatabase() {
-  const tablenames = await testPrisma.$queryRaw<
-    Array<{ tablename: string }>
-  >`SELECT tablename FROM pg_tables WHERE schemaname='public'`
-
-  const tables = tablenames
-    .map(({ tablename }) => tablename)
-    .filter((name) => name !== '_prisma_migrations')
-    .map((name) => `"public"."${name}"`)
-    .join(', ')
-
   try {
-    await testPrisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`)
+    // Delete all records in reverse order of dependencies
+    await testPrisma.agent.deleteMany()
+    await testPrisma.model.deleteMany()
+    await testPrisma.user.deleteMany()
   } catch (error) {
-    console.log('clearDatabase error:', error)
+    console.error('clearDatabase error:', error)
+    throw error
   }
 }
 
@@ -37,7 +32,8 @@ export { testPrisma }
 export const createTestUser = async () => {
   return await testPrisma.user.create({
     data: {
-      email: 'test@example.com',
+      id: uuidv4(),
+      email: `test-${uuidv4()}@example.com`,
       name: 'Test User',
     },
   })
@@ -46,7 +42,7 @@ export const createTestUser = async () => {
 export const createTestModel = async () => {
   return await testPrisma.model.create({
     data: {
-      id: 'test-model-1',
+      id: `test-model-${uuidv4()}`,
       name: 'Test Model',
       description: 'A test model',
       version: '1.0.0',
@@ -62,6 +58,7 @@ export const createTestModel = async () => {
 export const createTestAgent = async (userId: string, modelId: string) => {
   return await testPrisma.agent.create({
     data: {
+      id: uuidv4(),
       name: 'Test Agent',
       status: 'active',
       userId,

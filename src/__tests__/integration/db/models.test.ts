@@ -14,7 +14,7 @@ describe('Database Models', () => {
   describe('User Model', () => {
     it('should create a user successfully', async () => {
       const user = await createTestUser()
-      expect(user.email).toBe('test@example.com')
+      expect(user.email).toMatch(/^test-.*@example\.com$/)
       expect(user.name).toBe('Test User')
       expect(user.id).toBeDefined()
     })
