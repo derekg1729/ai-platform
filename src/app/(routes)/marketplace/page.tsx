@@ -16,8 +16,8 @@ export default function MarketplacePage() {
     async function loadModels() {
       try {
         const response = await listModels()
-        if (!response.success || !response.data) {
-          setError(response.error?.message || 'Failed to load models')
+        if (response.success !== true || response.data == null) {
+          setError(response.error?.message ?? 'Failed to load models')
           return
         }
         setModels(response.data.items)
@@ -28,7 +28,7 @@ export default function MarketplacePage() {
       }
     }
 
-    loadModels()
+    void loadModels()
   }, [])
 
   const categories = ['all', ...new Set(models.map(model => model.category.toLowerCase()))]
@@ -36,8 +36,8 @@ export default function MarketplacePage() {
     ? models 
     : models.filter(model => model.category.toLowerCase() === selectedCategory)
 
-  if (loading) return <div>Loading...</div>
-  if (error) return <div>Error: {error}</div>
+  if (loading === true) return <div>Loading...</div>
+  if (error != null && error.length > 0) return <div>Error: {error}</div>
 
   return (
     <div className="container mx-auto px-4 py-4">

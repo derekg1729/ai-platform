@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient as _PrismaClient } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { createId } from '@paralleldrive/cuid2'
-import { randomUUID } from 'crypto'
 
 // Create a singleton instance for tests
 const testPrisma = prisma

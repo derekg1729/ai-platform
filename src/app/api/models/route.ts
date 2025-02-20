@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { createApiResponse, createErrorResponse, ApiError } from '@/lib/api-utils'
 import { ModelValidationService } from '@/lib/services/model-validation'
 import { ModelCategories } from '@/lib/validation/model-schemas'
+import type { Prisma } from '@prisma/client'
 
 // GET /api/models - List all models
 export async function GET(request: NextRequest) {
@@ -13,11 +14,13 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const category = url.searchParams.get('category')
     const minVersion = url.searchParams.get('minVersion')
-    const capabilities = url.searchParams.get('capabilities')?.split(',')
+    const capabilities = url.searchParams.get('capabilities')
 
     // Build where clause
-    const where: any = {}
-    if (category) {
+    const where: Prisma.ModelWhereInput = {}
+    
+    // Validate category if provided
+    if (typeof category === 'string' && category !== '') {
       if (!ModelCategories.includes(category as any)) {
         throw new ApiError('Invalid category', 400, 'INVALID_CATEGORY')
       }
@@ -35,17 +38,18 @@ export async function GET(request: NextRequest) {
     // Apply additional filters
     let filteredModels = models
 
-    // Filter by minimum version
-    if (minVersion && ModelValidationService.validateVersion(minVersion)) {
+    // Filter by minimum version if provided and valid
+    if (typeof minVersion === 'string' && minVersion !== '' && ModelValidationService.validateVersion(minVersion)) {
       filteredModels = filteredModels.filter((model) =>
         ModelValidationService.isNewerVersion(model.version, minVersion)
       )
     }
 
-    // Filter by capabilities
-    if (capabilities && capabilities.length > 0) {
+    // Filter by capabilities if provided
+    const capabilitiesArray = capabilities?.split(',').filter(Boolean)
+    if (Array.isArray(capabilitiesArray) && capabilitiesArray.length > 0) {
       filteredModels = filteredModels.filter((model) =>
-        ModelValidationService.validateCapabilities(model.capabilities, capabilities)
+        ModelValidationService.validateCapabilities(model.capabilities, capabilitiesArray)
       )
     }
 
@@ -71,7 +75,7 @@ export async function POST(request: NextRequest) {
       where: { id: validatedData.id },
     })
 
-    if (existingModel) {
+    if (existingModel !== null) {
       throw new ApiError('Model with this ID already exists', 409, 'MODEL_EXISTS')
     }
 

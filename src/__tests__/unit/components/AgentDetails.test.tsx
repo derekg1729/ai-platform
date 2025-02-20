@@ -59,7 +59,7 @@ describe('AgentDetails Component', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText(errorMessage)).toBeInTheDocument()
+      expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument()
     })
   })
 
@@ -78,7 +78,7 @@ describe('AgentDetails Component', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to load model')).toBeInTheDocument()
+      expect(screen.getByText('Error: Failed to load model')).toBeInTheDocument()
     })
   })
 

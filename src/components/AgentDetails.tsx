@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Agent, Model } from '@/types/api'
 import { getAgent, getModel } from '@/lib/api/agents'
 import { Button } from '@/components/ui/button'
@@ -63,29 +63,31 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const agentResponse = await getAgent(agentId)
-        if (!agentResponse.success || !agentResponse.data) {
-          throw new Error(agentResponse.error?.message || 'Failed to load agent')
-        }
-        setAgent(agentResponse.data)
-
-        const modelResponse = await getModel(agentResponse.data.modelId)
-        if (!modelResponse.success || !modelResponse.data) {
-          throw new Error(modelResponse.error?.message || 'Failed to load model')
-        }
-        setModel(modelResponse.data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unexpected error occurred')
-      } finally {
-        setLoading(false)
+  const loadData = useCallback(async () => {
+    try {
+      const agentResponse = await getAgent(agentId)
+      if (agentResponse.success !== true || agentResponse.data == null) {
+        const errorMessage = agentResponse.error?.message
+        throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Failed to load agent')
       }
-    }
+      setAgent(agentResponse.data)
 
-    loadData()
+      const modelResponse = await getModel(agentResponse.data.modelId)
+      if (modelResponse.success !== true || modelResponse.data == null) {
+        const errorMessage = modelResponse.error?.message
+        throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Failed to load model')
+      }
+      setModel(modelResponse.data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
   }, [agentId])
+
+  useEffect(() => {
+    void loadData()
+  }, [loadData])
 
   const getStatusColor = (status: ApiConnection['status']) => {
     switch (status) {
@@ -96,25 +98,19 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
-      </div>
-    )
+  if (loading === true) {
+    return <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500" />
   }
 
-  if (error || !agent || !model) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 max-w-md text-center">
-          <p className="text-red-200">{error || 'Agent not found'}</p>
-        </div>
-      </div>
-    )
+  if (error != null && error.length > 0) {
+    return <div className="text-red-500">Error: {error}</div>
   }
 
-  const connections = DUMMY_CONNECTIONS[model.id] || []
+  if (agent == null || model == null) {
+    return <div>No agent data available</div>
+  }
+
+  const connections = DUMMY_CONNECTIONS[model.id] ?? []
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -181,10 +177,10 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
                         </span>
                       </div>
                       <p className="text-sm text-gray-400 mb-2">{connection.description}</p>
-                      {connection.errorMessage && (
+                      {connection.errorMessage != null && connection.errorMessage.length > 0 && (
                         <p className="text-sm text-red-400 mb-2">{connection.errorMessage}</p>
                       )}
-                      {connection.lastChecked && (
+                      {connection.lastChecked != null && connection.lastChecked.length > 0 && (
                         <p className="text-xs text-gray-500 mb-2">
                           Last checked: {new Date(connection.lastChecked).toLocaleString()}
                         </p>
@@ -207,7 +203,7 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
               agent.status === 'stopped' ? 'bg-red-500/20 text-red-200' :
               'bg-yellow-500/20 text-yellow-200'
             }`}>
-              {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+              {agent.status != null && agent.status.length > 0 ? agent.status.charAt(0).toUpperCase() + agent.status.slice(1) : 'Unknown'}
             </span>
             <Button
               variant="outline"
@@ -229,7 +225,7 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
           <div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Configuration</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(agent.config.settings || {}).map(([key, value]) => (
+              {Object.entries(agent.config.settings ?? {}).map(([key, value]) => (
                 <div key={key} className="space-y-1">
                   <label className="block text-sm font-medium text-gray-300">{key}</label>
                   <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-2">
@@ -239,8 +235,9 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
               ))}
             </div>
           </div>
-        </div>
 
+          {/* API Connections */}
+        </div>
         {/* Right Column */}
         <div className="space-y-6">
           <AgentFeedback agentId={agent.id} />

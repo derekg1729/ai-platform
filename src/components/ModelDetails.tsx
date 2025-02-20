@@ -20,11 +20,11 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
     async function loadData() {
       try {
         const response = await getModel(modelId)
-        if (!response.success) {
-          setError(response.error?.message || 'Failed to load model details')
+        if (response.success !== true) {
+          setError(response.error?.message ?? 'Failed to load model details')
           return
         }
-        setModel(response.data || null)
+        setModel(response.data ?? null)
       } catch {
         setError('An unexpected error occurred')
       } finally {
@@ -32,7 +32,7 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
       }
     }
 
-    loadData()
+    void loadData()
   }, [modelId])
 
   function handleDeploySuccess(agent: Agent) {
@@ -40,7 +40,7 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
     window.location.href = `/agents/${agent.id}`
   }
 
-  if (loading) {
+  if (loading === true) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
@@ -48,7 +48,7 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
     )
   }
 
-  if (error) {
+  if (error != null && error.length > 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 max-w-md text-center">
@@ -58,7 +58,7 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
     )
   }
 
-  if (!model) {
+  if (model == null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4 max-w-md text-center">
@@ -120,7 +120,9 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
               <div className="text-center">
                 <div className="text-3xl font-bold text-white mb-2">
                   {model.pricing.type === 'free' ? 'Free' : `$${model.pricing.amount}`}
-                  {model.pricing.period && <span className="text-lg text-gray-400">/{model.pricing.period}</span>}
+                  {model.pricing.period != null && model.pricing.period.length > 0 && (
+                    <span className="text-lg text-gray-400">/{model.pricing.period}</span>
+                  )}
                 </div>
                 <Button 
                   className="w-full bg-purple-500 hover:bg-purple-600"
@@ -169,7 +171,7 @@ export default function ModelDetails({ modelId }: ModelDetailsProps) {
       </div>
 
       {/* Deploy Modal */}
-      {showDeployModal && model && (
+      {showDeployModal === true && model != null && (
         <DeployModal
           model={model}
           onClose={() => setShowDeployModal(false)}

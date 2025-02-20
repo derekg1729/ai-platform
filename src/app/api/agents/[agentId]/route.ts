@@ -4,6 +4,7 @@ import { AgentRuntime } from '@/lib/services/agent-runtime'
 import { getUserIdFromRequest } from '@/lib/auth'
 import { ApiError } from '@/lib/api-utils'
 import { createApiResponse, createErrorResponse } from '@/lib/api-utils'
+import { z } from 'zod'
 
 /**
  * GET /api/agents/[agentId]
@@ -25,6 +26,12 @@ export async function GET(
   }
 }
 
+const updateAgentSchema = z.object({
+  name: z.string().optional(),
+  status: z.enum(['initializing', 'ready', 'running', 'stopped', 'error']).optional(),
+  config: z.record(z.unknown()).optional()
+})
+
 /**
  * PATCH /api/agents/[agentId]
  * Update a specific agent
@@ -35,9 +42,19 @@ export async function PATCH(
 ) {
   try {
     const userId = await getUserIdFromRequest(req)
-    const data = await req.json()
-
-    const agent = await AgentService.updateAgent(params.agentId, userId, data)
+    const rawData = await req.json()
+    
+    // Validate request data
+    const result = updateAgentSchema.safeParse(rawData)
+    if (!result.success) {
+      throw new ApiError(
+        'Invalid request data: ' + result.error.message,
+        400,
+        'INVALID_REQUEST_DATA'
+      )
+    }
+    
+    const agent = await AgentService.updateAgent(params.agentId, userId, result.data)
     return createApiResponse(agent)
   } catch (error) {
     if (error instanceof Error) {

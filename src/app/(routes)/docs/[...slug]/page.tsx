@@ -15,21 +15,25 @@ export default async function DocsPage({ params }: PageProps) {
   try {
     // Try loading as index file first, then as direct file
     let content = await getMarkdownContent(indexPath)
-    if (!content) {
+    if (content === null || content === undefined) {
       content = await getMarkdownContent(directPath)
     }
 
-    if (!content) {
-      return notFound()
+    if (params?.slug != null && 
+        Array.isArray(params.slug) && 
+        params.slug.length > 0 && 
+        content != null && 
+        content.length > 0) {
+      return (
+        <div className="container mx-auto px-4 py-4">
+          <div className="max-w-4xl mx-auto prose prose-invert prose-purple">
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+          </div>
+        </div>
+      )
     }
 
-    return (
-      <div className="container mx-auto px-4 py-4">
-        <div className="max-w-4xl mx-auto prose prose-invert prose-purple">
-          <div dangerouslySetInnerHTML={{ __html: content }} />
-        </div>
-      </div>
-    )
+    return notFound()
   } catch {
     return notFound()
   }

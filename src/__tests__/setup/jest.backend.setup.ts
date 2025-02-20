@@ -1,4 +1,4 @@
-import { testPrisma, teardownTestDatabase, setupTestDatabase } from './backend-test-utils'
+import { teardownTestDatabase, setupTestDatabase } from './backend-test-utils'
 
 // Mock fetch and related globals for tests
 const mockFetchResponse = {

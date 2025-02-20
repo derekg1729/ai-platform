@@ -45,7 +45,10 @@ describe('Package Dependencies', () => {
   }
 
   it('should use a supported React version', () => {
-    const reactVersion = packageJson.dependencies.react
+    const reactVersion = packageJson.dependencies?.react
+    if (reactVersion === undefined) {
+      throw new Error('React dependency is required')
+    }
     const supportedReactVersion = '18.0.0'
     
     expect(
@@ -54,10 +57,13 @@ describe('Package Dependencies', () => {
   })
 
   it('should have compatible testing library dependencies', () => {
-    const reactVersion = packageJson.dependencies.react
-    const testingLibraryVersion = packageJson.devDependencies['@testing-library/react']
+    const reactVersion = packageJson.dependencies?.react
+    if (reactVersion === undefined) {
+      throw new Error('React dependency is required')
+    }
+    const testingLibraryVersion = packageJson.devDependencies?.['@testing-library/react']
     
-    if (!testingLibraryVersion) {
+    if (testingLibraryVersion === undefined) {
       throw new Error('@testing-library/react is required for testing')
     }
 
@@ -68,11 +74,14 @@ describe('Package Dependencies', () => {
   })
 
   it('should have matching React runtime and type versions', () => {
-    const reactVersion = packageJson.dependencies.react
-    const reactTypes = packageJson.devDependencies['@types/react']
-    const reactDomTypes = packageJson.devDependencies['@types/react-dom']
+    const reactVersion = packageJson.dependencies?.react
+    if (reactVersion === undefined) {
+      throw new Error('React dependency is required')
+    }
+    const reactTypes = packageJson.devDependencies?.['@types/react']
+    const reactDomTypes = packageJson.devDependencies?.['@types/react-dom']
 
-    if (!reactTypes || !reactDomTypes) {
+    if (reactTypes === undefined || reactDomTypes === undefined) {
       throw new Error('React type definitions are required')
     }
 
@@ -96,10 +105,10 @@ describe('Package Dependencies', () => {
     }
 
     Object.entries(peerDependencies).forEach(([pkg, peers]) => {
-      if (packageJson.devDependencies[pkg]) {
+      if (packageJson.devDependencies?.[pkg] !== undefined) {
         Object.entries(peers).forEach(([peerPkg, requiredVersion]) => {
-          const installedVersion = packageJson.dependencies[peerPkg]
-          if (!installedVersion) {
+          const installedVersion = packageJson.dependencies?.[peerPkg]
+          if (installedVersion === undefined) {
             throw new Error(`Missing peer dependency: ${peerPkg} is required by ${pkg}`)
           }
 
@@ -112,9 +121,18 @@ describe('Package Dependencies', () => {
   })
 
   it('should have compatible Next.js dependencies', () => {
-    const nextVersion = packageJson.dependencies.next
-    const reactVersion = packageJson.dependencies.react
-    const nextConfigVersion = packageJson.devDependencies['eslint-config-next']
+    const nextVersion = packageJson.dependencies?.next
+    if (nextVersion === undefined) {
+      throw new Error('Next.js dependency is required')
+    }
+    const reactVersion = packageJson.dependencies?.react
+    if (reactVersion === undefined) {
+      throw new Error('React dependency is required')
+    }
+    const nextConfigVersion = packageJson.devDependencies?.['eslint-config-next']
+    if (nextConfigVersion === undefined) {
+      throw new Error('eslint-config-next devDependency is required')
+    }
 
     // Next.js 15.x requires React 18
     expect(isVersionSupported(reactVersion, '18.0.0')).toBe(true)
@@ -124,8 +142,8 @@ describe('Package Dependencies', () => {
   })
 
   it('should have compatible Node.js types for Vercel deployment', () => {
-    const nodeTypes = packageJson.devDependencies['@types/node']
-    if (!nodeTypes) {
+    const nodeTypes = packageJson.devDependencies?.['@types/node']
+    if (nodeTypes === undefined) {
       throw new Error('@types/node is required for Vercel deployment')
     }
 
@@ -135,16 +153,16 @@ describe('Package Dependencies', () => {
   })
 
   // Only run MDX-related tests if the dependencies are present
-  if (packageJson.dependencies['@mdx-js/react']) {
+  if (packageJson.dependencies?.['@mdx-js/react'] !== undefined) {
     it('should have required MDX dependencies for documentation', () => {
       const requiredMdxDeps = ['@mdx-js/loader', '@mdx-js/react', '@next/mdx']
       requiredMdxDeps.forEach(dep => {
-        expect(packageJson.dependencies[dep]).toBeDefined()
+        expect(packageJson.dependencies?.[dep]).toBeDefined()
       })
     })
 
     it('should have MDX configured in Next.js config', () => {
-      if (nextConfig) {
+      if (nextConfig !== null) {
         expect(nextConfig).toContain('@next/mdx')
         expect(nextConfig).toContain('pageExtensions')
       }

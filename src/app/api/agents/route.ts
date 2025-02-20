@@ -1,8 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { AgentService } from '@/lib/services/agent-service'
 import { getUserIdFromRequest } from '@/lib/auth'
 import { ApiError } from '@/lib/api-utils'
 import { createApiResponse, createErrorResponse } from '@/lib/api-utils'
+import { z } from 'zod'
+
+// Request validation schema
+const createAgentSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  modelId: z.string().min(1, 'Model ID is required'),
+  config: z.record(z.unknown()).optional()
+})
+
+type _CreateAgentRequest = z.infer<typeof createAgentSchema>
 
 /**
  * GET /api/agents
@@ -28,18 +38,24 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const userId = await getUserIdFromRequest(req)
-    const data = await req.json()
-
-    // Validate required fields
-    if (!data.name || !data.modelId) {
-      throw new ApiError('Missing required fields: name, modelId', 400, 'MISSING_REQUIRED_FIELDS')
+    const rawData = await req.json()
+    
+    // Validate request data
+    const result = createAgentSchema.safeParse(rawData)
+    if (!result.success) {
+      throw new ApiError(
+        'Invalid request data: ' + result.error.message,
+        400,
+        'INVALID_REQUEST_DATA'
+      )
     }
-
+    
+    const data = result.data
     const agent = await AgentService.createAgent({
       name: data.name,
       modelId: data.modelId,
       userId,
-      config: data.config,
+      config: data.config
     })
 
     return createApiResponse(agent, 201)

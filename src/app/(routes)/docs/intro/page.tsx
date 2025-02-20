@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 export default async function IntroPage() {
   const content = await getMarkdownContent('src/content/shared/platform-docs.mdx')
   
-  if (!content) {
+  if (content === null || content === undefined || content.length === 0) {
     return notFound()
   }
 

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     })
 
-    if (!model) {
+    if (model == null) {
       throw new ApiError('Model not found', 404, 'MODEL_NOT_FOUND')
     }
 
@@ -46,7 +46,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       where: { id: params.modelId },
     })
 
-    if (!existingModel) {
+    if (existingModel == null) {
       throw new ApiError('Model not found', 404, 'MODEL_NOT_FOUND')
     }
 
@@ -55,8 +55,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const validatedData = ModelValidationService.validateModelUpdate(data)
 
     // Validate version if it's being updated
-    if (validatedData.version) {
-      if (!ModelValidationService.validateVersion(validatedData.version)) {
+    if (validatedData.version != null && validatedData.version.length > 0) {
+      if (ModelValidationService.validateVersion(validatedData.version) !== true) {
         throw new ApiError(
           'Invalid version format. Use semantic versioning (e.g., 1.0.0)',
           400,
@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         )
       }
 
-      if (!ModelValidationService.isNewerVersion(validatedData.version, existingModel.version)) {
+      if (ModelValidationService.isNewerVersion(validatedData.version, existingModel.version) !== true) {
         throw new ApiError(
           'New version must be higher than current version',
           400,

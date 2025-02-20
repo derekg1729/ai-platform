@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { Model } from '@prisma/client'
+import type { PrismaClient } from '@prisma/client'
+
+type Model = PrismaClient['model']['fields']
 
 export class ModelService {
   /**

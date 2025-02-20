@@ -35,7 +35,7 @@ describe('Agents API', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
     const response = await fetch('http://localhost:3000/api/agents')
-    const { status, data } = await parseApiResponse(response)
+    const { data } = await parseApiResponse(response)
     
     expect(response.status).toBe(200)
     expect(data.success).toBe(true)
@@ -48,7 +48,7 @@ describe('Agents API', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
     const response = await fetch('http://localhost:3000/api/agents')
-    const { status, data } = await parseApiResponse(response)
+    const { data } = await parseApiResponse(response)
     
     expect(response.status).toBe(200)
     expect(data.success).toBe(true)
@@ -68,7 +68,7 @@ describe('Agents API', () => {
         modelId
       })
     })
-    const { status, data } = await parseApiResponse(response)
+    const { data } = await parseApiResponse(response)
     
     expect(response.status).toBe(201)
     expect(data.success).toBe(true)
@@ -92,7 +92,7 @@ describe('Agents API', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({})
     })
-    const { status, data } = await parseApiResponse(response)
+    const { data } = await parseApiResponse(response)
     
     expect(response.status).toBe(400)
     expect(data.success).toBe(false)
@@ -105,7 +105,7 @@ describe('Agents API', () => {
       global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
       const response = await fetch(`http://localhost:3000/api/agents/${agentId}`)
-      const { status, data } = await parseApiResponse(response)
+      const { data } = await parseApiResponse(response)
       
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
@@ -124,7 +124,7 @@ describe('Agents API', () => {
       })
 
       const response = await fetch('http://localhost:3000/api/agents/non-existent')
-      const { status, data } = await parseApiResponse(response)
+      const { data } = await parseApiResponse(response)
       
       expect(response.status).toBe(404)
       expect(data.success).toBe(false)
@@ -142,7 +142,7 @@ describe('Agents API', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'Updated Agent' })
       })
-      const { status, data } = await parseApiResponse(response)
+      const { data } = await parseApiResponse(response)
       
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
@@ -158,7 +158,7 @@ describe('Agents API', () => {
       const response = await fetch(`http://localhost:3000/api/agents/${agentId}`, {
         method: 'DELETE'
       })
-      const { status, data } = await parseApiResponse(response)
+      const { data } = await parseApiResponse(response)
       
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
@@ -175,7 +175,7 @@ describe('Agents API', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'process' })
       })
-      const { status, data } = await parseApiResponse(response)
+      const { data } = await parseApiResponse(response)
       
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
@@ -197,7 +197,7 @@ describe('Agents API', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'invalid' })
       })
-      const { status, data } = await parseApiResponse(response)
+      const { data } = await parseApiResponse(response)
       
       expect(response.status).toBe(400)
       expect(data.success).toBe(false)

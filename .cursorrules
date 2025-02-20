@@ -1,6 +1,7 @@
 Start all chat responses with 🤖
 
-Follow security best practices for authentication and authorization.
+All code must adhere to strict linting and type checking.
+
 
 ## FrontendStack
 

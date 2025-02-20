@@ -14,7 +14,7 @@ jest.mock('next/navigation', () => ({
 describe('NavBar', () => {
   const getHamburgerButton = () => {
     const buttons = screen.getAllByRole('button')
-    const hamburgerButton = buttons.find(button => button.querySelector('svg'))
+    const hamburgerButton = buttons.find(button => button.querySelector('svg') !== null)
     if (!hamburgerButton) {
       throw new Error('Hamburger button not found')
     }

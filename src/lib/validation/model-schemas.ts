@@ -22,7 +22,7 @@ export const ApiParameterSchema = z.object({
   enum: z.array(z.string()).optional(),
   items: z.lazy(() => ApiParameterSchema).optional(), // For array types
   properties: z.record(z.lazy(() => ApiParameterSchema)).optional(), // For object types
-})
+}).strict()
 
 // API Specification schema
 export const ApiSpecSchema = z.object({
@@ -30,18 +30,18 @@ export const ApiSpecSchema = z.object({
     type: z.enum(['string', 'number', 'boolean', 'object', 'array']),
     description: z.string().optional(),
     parameters: z.record(ApiParameterSchema).optional(),
-  }),
+  }).strict(),
   output: z.object({
     type: z.enum(['string', 'number', 'boolean', 'object', 'array']),
     description: z.string().optional(),
     parameters: z.record(ApiParameterSchema).optional(),
-  }),
+  }).strict(),
   examples: z.array(z.object({
-    input: z.any(),
-    output: z.any(),
+    input: z.unknown(),
+    output: z.unknown(),
     description: z.string().optional(),
   })).optional(),
-})
+}).strict()
 
 // Model pricing schema
 export const PricingSchema = z.object({

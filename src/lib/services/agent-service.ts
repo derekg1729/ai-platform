@@ -2,7 +2,10 @@ import { prisma } from '@/lib/prisma'
 import { ApiError } from '@/lib/api-utils'
 import { AgentValidationService, verifyAgentOwnership } from './agent-validation'
 import { ModelService } from './model-service'
-import { Agent, AgentStatus } from '@prisma/client'
+import type { PrismaClient } from '@prisma/client'
+
+type Agent = PrismaClient['agent']['fields']
+type AgentStatus = PrismaClient['agent']['fields']['status']
 
 export class AgentService {
   /**
@@ -12,7 +15,7 @@ export class AgentService {
     name: string
     modelId: string
     userId: string
-    config?: Record<string, any>
+    config?: Record<string, unknown>
   }): Promise<Agent> {
     // Verify model exists
     const model = await ModelService.getModel(data.modelId)
@@ -131,7 +134,7 @@ export class AgentService {
   static async updateConfig(
     agentId: string,
     userId: string,
-    config: Record<string, any>
+    config: Record<string, unknown>
   ): Promise<Agent> {
     // Verify ownership
     await verifyAgentOwnership(agentId, userId)

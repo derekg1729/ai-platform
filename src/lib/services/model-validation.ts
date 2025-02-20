@@ -90,8 +90,8 @@ export class ModelValidationService {
    * Formats Zod validation errors into a readable string
    */
   private static formatZodError(error: unknown): string {
-    if (error && typeof error === 'object' && 'errors' in error) {
-      return (error.errors as { message: string }[])
+    if (error !== null && typeof error === 'object' && 'errors' in error && Array.isArray((error as { errors: unknown[] }).errors)) {
+      return ((error as { errors: { message: string }[] }).errors)
         .map((e) => e.message)
         .join(', ')
     }

@@ -19,6 +19,7 @@ const baseConfig = {
   linterOptions: {
     reportUnusedDisableDirectives: true,
   },
+  ignores: ["**/.next/**"],
   rules: {
     // Base ESLint rules
     "no-console": ["warn", { allow: ["warn", "error"] }],

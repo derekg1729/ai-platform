@@ -1,42 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { AgentLog } from '@/types/api'
+import { useEffect, useState } from 'react'
+import { getAgentLogs } from '@/lib/api/agents'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { getAgentLogs } from '@/lib/api/agents'
-
-// Dummy log data for demonstration
-const DUMMY_LOGS: AgentLog[] = [
-  {
-    agentId: '1',
-    timestamp: '2024-02-26T15:30:00Z',
-    level: 'info',
-    message: 'Agent started successfully',
-    metadata: { config: { model: 'gpt-4' } }
-  },
-  {
-    agentId: '1',
-    timestamp: '2024-02-26T15:30:05Z',
-    level: 'info',
-    message: 'Processing request #1234',
-    metadata: { requestId: '1234' }
-  },
-  {
-    agentId: '1',
-    timestamp: '2024-02-26T15:30:10Z',
-    level: 'warn',
-    message: 'High latency detected',
-    metadata: { latency: '2500ms' }
-  },
-  {
-    agentId: '1',
-    timestamp: '2024-02-26T15:30:15Z',
-    level: 'error',
-    message: 'Failed to connect to external API',
-    metadata: { service: 'openai', error: 'timeout' }
-  }
-]
+import type { AgentLog } from '@/types/api'
 
 interface AgentLogsProps {
   agentId: string
@@ -49,24 +17,29 @@ export default function AgentLogs({ agentId }: AgentLogsProps) {
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'info' | 'warn' | 'error'>('all')
 
   useEffect(() => {
-    async function loadLogs() {
-      try {
-        const response = await getAgentLogs(agentId)
-        if (!response.success) {
-          setError(response.error?.message || 'Failed to load logs')
-          return
-        }
-        // In Designer Mode, use dummy data
-        setLogs(DUMMY_LOGS)
-      } catch {
-        setError('An unexpected error occurred')
-      } finally {
-        setLoading(false)
-      }
+    const fetchLogs = async () => {
+      await loadLogs()
     }
-
-    loadLogs()
+    void fetchLogs()
   }, [agentId])
+
+  const loadLogs = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await getAgentLogs(agentId)
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message ?? 'Failed to load logs')
+      }
+
+      setLogs(response.data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredLogs = selectedLevel === 'all' 
     ? logs 
@@ -74,10 +47,14 @@ export default function AgentLogs({ agentId }: AgentLogsProps) {
 
   const getLevelColor = (level: AgentLog['level']) => {
     switch (level) {
-      case 'info': return 'bg-blue-500/20 text-blue-200'
-      case 'warn': return 'bg-yellow-500/20 text-yellow-200'
-      case 'error': return 'bg-red-500/20 text-red-200'
-      default: return 'bg-gray-500/20 text-gray-400'
+      case 'info':
+        return 'bg-blue-500/20 text-blue-200'
+      case 'warn':
+        return 'bg-yellow-500/20 text-yellow-200'
+      case 'error':
+        return 'bg-red-500/20 text-red-200'
+      default:
+        return 'bg-gray-500/20 text-gray-400'
     }
   }
 
@@ -106,23 +83,23 @@ export default function AgentLogs({ agentId }: AgentLogsProps) {
           <CardTitle className="text-white">Agent Logs</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+          <div className="text-center py-8">
+            <p className="text-gray-400">Loading logs...</p>
           </div>
         </CardContent>
       </Card>
     )
   }
 
-  if (error) {
+  if (error !== null) {
     return (
       <Card className="bg-gray-900/50 border-gray-700/50">
         <CardHeader>
           <CardTitle className="text-white">Agent Logs</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-center">
-            <p className="text-red-200">{error}</p>
+          <div className="text-center py-8">
+            <p className="text-red-400">Error: {error}</p>
           </div>
         </CardContent>
       </Card>
@@ -131,40 +108,51 @@ export default function AgentLogs({ agentId }: AgentLogsProps) {
 
   return (
     <Card className="bg-gray-900/50 border-gray-700/50">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-white">Agent Logs</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-white">Agent Logs</CardTitle>
+        <div className="flex space-x-2">
           <Button
-            onClick={handleDownload}
-            className="bg-purple-500 hover:bg-purple-600"
+            variant={selectedLevel === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedLevel('all')}
           >
-            Download Logs
+            All
+          </Button>
+          <Button
+            variant={selectedLevel === 'info' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedLevel('info')}
+          >
+            Info
+          </Button>
+          <Button
+            variant={selectedLevel === 'warn' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedLevel('warn')}
+          >
+            Warn
+          </Button>
+          <Button
+            variant={selectedLevel === 'error' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedLevel('error')}
+          >
+            Error
           </Button>
         </div>
+        <Button
+          onClick={handleDownload}
+          className="bg-purple-500 hover:bg-purple-600"
+        >
+          Download Logs
+        </Button>
       </CardHeader>
       <CardContent>
-        {/* Log Level Filter */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-          {(['all', 'info', 'warn', 'error'] as const).map((level) => (
-            <button
-              key={level}
-              onClick={() => setSelectedLevel(level)}
-              className={`px-4 py-2 rounded-xl text-sm transition-colors whitespace-nowrap ${
-                selectedLevel === level
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-gray-900/50 border border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:text-white'
-              }`}
-            >
-              {level.charAt(0).toUpperCase() + level.slice(1)}
-            </button>
-          ))}
-        </div>
-
         {/* Logs List */}
         <div className="space-y-3 max-h-[400px] overflow-y-auto">
-          {filteredLogs.map((log, index) => (
+          {filteredLogs.map((log) => (
             <div 
-              key={index}
+              key={`${log.agentId}-${log.timestamp}`}
               className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-4"
             >
               <div className="flex items-start justify-between mb-2">

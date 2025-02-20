@@ -17,8 +17,8 @@ export default function AgentsPage() {
     async function loadAgents() {
       try {
         const response = await listUserAgents()
-        if (!response.success || !response.data) {
-          setError(response.error?.message || 'Failed to load agents')
+        if (response.success !== true || response.data == null) {
+          setError(response.error?.message ?? 'Failed to load agents')
           return
         }
         setAgents(response.data.items)
@@ -29,11 +29,11 @@ export default function AgentsPage() {
       }
     }
 
-    loadAgents()
+    void loadAgents()
   }, [])
 
-  if (loading) return <div>Loading...</div>
-  if (error) return <div>Error: {error}</div>
+  if (loading === true) return <div>Loading...</div>
+  if (error != null && error.length > 0) return <div>Error: {error}</div>
 
   return (
     <div className="container mx-auto px-4 py-24">
@@ -86,10 +86,10 @@ export default function AgentsPage() {
               </div>
 
               <div className="mt-4 grid gap-4">
-                {Object.entries(agent.config.apiKeys).length > 0 && (
+                {Object.entries(agent.config.apiKeys ?? {}).length > 0 && (
                   <div className="bg-gray-800/50 rounded-lg p-4">
                     <div className="text-sm text-gray-400 mb-2">API Keys</div>
-                    {Object.entries(agent.config.apiKeys as Record<string, string>).map(([service, key]) => (
+                    {Object.entries(agent.config.apiKeys ?? {}).map(([service, key]) => (
                       <div key={service} className="flex justify-between items-center">
                         <span className="text-sm text-gray-300">{service}</span>
                         <code className="text-sm text-purple-400">{key}</code>

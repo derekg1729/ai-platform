@@ -116,7 +116,7 @@ export default function AgentFeedback({ agentId }: Props) {
           />
           <div className="mt-2 flex justify-end">
             <Button 
-              onClick={handleSubmit} 
+              onClick={() => void handleSubmit()} 
               disabled={!feedback.trim() || isSubmitting}
               className="bg-purple-500 hover:bg-purple-600 text-white disabled:bg-gray-700"
             >

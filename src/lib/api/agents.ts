@@ -274,7 +274,7 @@ export async function listModels(): Promise<ApiResponse<PaginatedResponse<Model>
  */
 export async function getModel(id: string): Promise<ApiResponse<Model>> {
   const model = dummyModels.find(m => m.id === id)
-  if (!model) {
+  if (model == null) {
     return {
       success: false,
       error: {
@@ -314,7 +314,7 @@ export async function listUserAgents(): Promise<ApiResponse<PaginatedResponse<Ag
  */
 export async function getAgent(id: string): Promise<ApiResponse<Agent>> {
   const agent = dummyAgents[id]
-  if (!agent) {
+  if (agent == null) {
     return {
       success: false,
       error: {
@@ -339,7 +339,7 @@ export async function deployAgent(
   config: Partial<Agent['config']> & { name: string }
 ): Promise<ApiResponse<Agent>> {
   const model = dummyModels.find(m => m.id === modelId)
-  if (!model) {
+  if (model == null) {
     return {
       success: false,
       error: {
@@ -387,7 +387,7 @@ export async function configureAgent(
   config: Partial<Agent['config']>
 ): Promise<ApiResponse<Agent>> {
   const agent = dummyAgents[agentId]
-  if (!agent) {
+  if (agent == null) {
     return {
       success: false,
       error: {
@@ -421,7 +421,7 @@ export async function configureAgent(
  */
 export async function startAgent(agentId: string): Promise<ApiResponse<Agent>> {
   const agent = dummyAgents[agentId]
-  if (!agent) {
+  if (agent == null) {
     return {
       success: false,
       error: {
@@ -460,7 +460,7 @@ export async function startAgent(agentId: string): Promise<ApiResponse<Agent>> {
  */
 export async function stopAgent(agentId: string): Promise<ApiResponse<Agent>> {
   const agent = dummyAgents[agentId]
-  if (!agent) {
+  if (agent == null) {
     return {
       success: false,
       error: {
@@ -500,7 +500,7 @@ export async function stopAgent(agentId: string): Promise<ApiResponse<Agent>> {
  */
 export async function getAgentOutput(agentId: string): Promise<ApiResponse<AgentOutput[]>> {
   const agent = dummyAgents[agentId]
-  if (!agent) {
+  if (agent == null) {
     return {
       success: false,
       error: {
@@ -536,7 +536,7 @@ export async function getAgentOutput(agentId: string): Promise<ApiResponse<Agent
  */
 export async function getAgentLogs(agentId: string): Promise<ApiResponse<AgentLog[]>> {
   const agent = dummyAgents[agentId]
-  if (!agent) {
+  if (agent == null) {
     return {
       success: false,
       error: {

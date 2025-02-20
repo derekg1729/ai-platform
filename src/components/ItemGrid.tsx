@@ -15,7 +15,7 @@ export default function ItemGrid() {
         setModels(response.data.items)
       }
     }
-    loadModels()
+    void loadModels()
   }, [])
 
   return (

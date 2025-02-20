@@ -29,12 +29,12 @@ export default function DeployModal({
     try {
       // Deploy agent from model
       const deployResponse = await deployAgent(model.id, {
-        name: config.name || `My ${model.name}`,
+        name: config.name != null && config.name.length > 0 ? config.name : `My ${model.name}`,
         settings: config
       })
 
-      if (!deployResponse.success || !deployResponse.data) {
-        throw new Error(deployResponse.error?.message || 'Failed to deploy agent')
+      if (deployResponse.success !== true || deployResponse.data == null) {
+        throw new Error(deployResponse.error?.message ?? 'Failed to deploy agent')
       }
 
       // Configure agent with API keys
@@ -42,15 +42,15 @@ export default function DeployModal({
         apiKeys: config
       })
 
-      if (!configureResponse.success || !configureResponse.data) {
-        throw new Error(configureResponse.error?.message || 'Failed to configure agent')
+      if (configureResponse.success !== true || configureResponse.data == null) {
+        throw new Error(configureResponse.error?.message ?? 'Failed to configure agent')
       }
 
       // Start agent
       const startResponse = await startAgent(configureResponse.data.id)
 
-      if (!startResponse.success || !startResponse.data) {
-        throw new Error(startResponse.error?.message || 'Failed to start agent')
+      if (startResponse.success !== true || startResponse.data == null) {
+        throw new Error(startResponse.error?.message ?? 'Failed to start agent')
       }
 
       onSuccess(startResponse.data)
@@ -69,7 +69,7 @@ export default function DeployModal({
           Deploy {model.name}
         </h2>
 
-        {error && (
+        {error != null && error.length > 0 && (
           <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4 text-red-200 text-sm">
             {error}
           </div>
@@ -86,7 +86,7 @@ export default function DeployModal({
                   type="text"
                   placeholder={`My ${model.name}`}
                   className="w-full bg-gray-800/50 border-gray-700/50 text-white"
-                  value={config.name || ''}
+                  value={config.name != null ? config.name : ''}
                   onChange={(e) => setConfig({ ...config, name: e.target.value })}
                 />
               </div>
@@ -123,7 +123,7 @@ export default function DeployModal({
                   type="password"
                   placeholder="sk-..."
                   className="w-full bg-gray-800/50 border-gray-700/50 text-white font-mono"
-                  value={config.apiKey || ''}
+                  value={config.apiKey != null ? config.apiKey : ''}
                   onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
                 />
                 <p className="mt-1 text-xs text-gray-400">
@@ -141,11 +141,11 @@ export default function DeployModal({
                 Back
               </Button>
               <Button
-                onClick={handleDeploy}
+                onClick={() => void handleDeploy()}
                 className="bg-purple-500 hover:bg-purple-600"
-                disabled={loading}
+                disabled={loading === true}
               >
-                {loading ? 'Deploying...' : 'Deploy'}
+                {loading === true ? 'Deploying...' : 'Deploy'}
               </Button>
             </div>
           </>

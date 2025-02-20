@@ -7,7 +7,7 @@ import { prisma } from './prisma'
  */
 export async function getUserIdFromRequest(req: NextRequest): Promise<string> {
   const userId = req.headers.get('x-user-id')
-  if (!userId) {
+  if (userId === null || userId === '') {
     throw new ApiError('User ID is required', 401, 'UNAUTHORIZED')
   }
 

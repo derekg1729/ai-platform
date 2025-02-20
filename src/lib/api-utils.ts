@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server'
-
 export type ApiResponse<T> = {
   success: boolean
   data?: T
@@ -63,11 +61,11 @@ export function createErrorResponse(
 }
 
 // Validation utilities
-export function validateRequiredFields<T extends Record<string, any>>(
+export function validateRequiredFields<T extends Record<string, unknown>>(
   data: T,
   requiredFields: (keyof T)[]
 ): void {
-  const missingFields = requiredFields.filter(field => !data[field])
+  const missingFields = requiredFields.filter(field => data[field] == null)
   if (missingFields.length > 0) {
     throw new ApiError(
       `Missing required fields: ${missingFields.join(', ')}`,

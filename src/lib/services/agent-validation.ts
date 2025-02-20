@@ -127,8 +127,8 @@ export class AgentValidationService {
    * Formats Zod validation errors
    */
   private static formatZodError(error: unknown): string {
-    if (error && typeof error === 'object' && 'errors' in error) {
-      return (error.errors as { message: string }[])
+    if (error !== null && typeof error === 'object' && 'errors' in error && Array.isArray((error as { errors: unknown[] }).errors)) {
+      return ((error as { errors: { message: string }[] }).errors)
         .map((e) => e.message)
         .join(', ')
     }
@@ -144,7 +144,7 @@ export async function verifyAgentOwnership(agentId: string, userId: string) {
     where: { id: agentId },
   })
 
-  if (!agent) {
+  if (agent === null) {
     throw new ApiError('Agent not found', 404, 'AGENT_NOT_FOUND')
   }
 
@@ -158,7 +158,7 @@ export async function verifyAgentOwnership(agentId: string, userId: string) {
 /**
  * Validates agent resource requirements
  */
-export async function validateResourceRequirements(agent: any) {
+export async function validateResourceRequirements(_agent: z.infer<typeof AgentSchema>) {
   // TODO: Implement resource validation
   // - Check compute requirements
   // - Validate storage needs
@@ -169,23 +169,23 @@ export async function validateResourceRequirements(agent: any) {
 /**
  * Validates agent API keys
  */
-export async function validateApiKeys(agent: any) {
-  const apiKeys = agent.config.apiKeys || {}
+export async function validateApiKeys(agent: z.infer<typeof AgentSchema>) {
+  const config = agent.config
+  const apiKeys = (config.apiKeys as Record<string, string>) ?? {}
   
   for (const [service, key] of Object.entries(apiKeys)) {
-    // TODO: Implement API key validation
-    // - Verify key format
-    // - Check key validity
-    // - Validate permissions
-    // - Test connectivity
+    if (typeof key !== 'string' || key.trim() === '') {
+      throw new ApiError(`Invalid API key for service: ${service}`, 400, 'INVALID_API_KEY')
+    }
   }
 }
 
 /**
  * Validates agent settings
  */
-export async function validateSettings(agent: any) {
-  const settings = agent.config.settings || {}
+export async function validateSettings(_agent: z.infer<typeof AgentSchema>) {
+  const config = _agent.config
+  const _settings = (config.settings as Record<string, unknown>) ?? {}
   
   // TODO: Implement settings validation
   // - Check required settings

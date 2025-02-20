@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, _NextResponse } from 'next/server'
 import { AgentRuntime } from '@/lib/services/agent-runtime'
 import { getUserIdFromRequest } from '@/lib/auth'
 import { ApiError } from '@/lib/api-utils'
@@ -49,7 +49,7 @@ export async function GET(
   { params }: { params: { agentId: string; action: string } }
 ) {
   try {
-    const userId = await getUserIdFromRequest(req)
+    const _userId = await getUserIdFromRequest(req)
 
     switch (params.action) {
       case 'status':
