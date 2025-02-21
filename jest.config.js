@@ -7,14 +7,16 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup/jest.setup.ts'],
-  testEnvironment: 'jest-environment-jsdom',
+  setupFilesAfterEnv: process.env.TEST_TYPE === 'frontend' 
+    ? ['<rootDir>/src/__tests__/setup/jest.setup.ts']
+    : ['<rootDir>/src/__tests__/setup/jest.db.setup.ts'],
+  testEnvironment: process.env.TEST_TYPE === 'frontend' ? 'jest-environment-jsdom' : 'node',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  testMatch: [
-    '<rootDir>/src/__tests__/**/*.test.{js,jsx,ts,tsx}'
-  ],
+  testMatch: process.env.TEST_TYPE === 'frontend' 
+    ? ['<rootDir>/src/__tests__/unit/**/*.test.{js,jsx,ts,tsx}']
+    : ['<rootDir>/src/__tests__/db/**/*.test.{js,jsx,ts,tsx}', '<rootDir>/src/__tests__/integration/**/*.test.{js,jsx,ts,tsx}'],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
