@@ -34,7 +34,7 @@ MIT License - see LICENSE for more details.
 
     // Write the README.md file
     fs.writeFileSync('README.md', readmeContent);
-    console.log('✅ README.md has been generated successfully!');
+    console.info('✅ README.md has been generated successfully!');
   } catch (error) {
     console.error('Error generating README:', error);
     process.exit(1);

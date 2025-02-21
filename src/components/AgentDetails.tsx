@@ -64,27 +64,41 @@ export default function AgentDetails({ agentId }: AgentDetailsProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let mounted = true
+
     async function loadData() {
       try {
         const agentResponse = await getAgent(agentId)
         if (!agentResponse.success || !agentResponse.data) {
           throw new Error(agentResponse.error?.message || 'Failed to load agent')
         }
-        setAgent(agentResponse.data)
+        if (mounted) {
+          setAgent(agentResponse.data)
+        }
 
         const modelResponse = await getModel(agentResponse.data.modelId)
         if (!modelResponse.success || !modelResponse.data) {
           throw new Error(modelResponse.error?.message || 'Failed to load model')
         }
-        setModel(modelResponse.data)
+        if (mounted) {
+          setModel(modelResponse.data)
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+        }
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
     loadData()
+
+    return () => {
+      mounted = false
+    }
   }, [agentId])
 
   const getStatusColor = (status: ApiConnection['status']) => {
