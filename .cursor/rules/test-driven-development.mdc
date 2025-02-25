@@ -1,0 +1,54 @@
+---
+description: 
+globs: 
+---
+# Test-Driven Development Rule
+
+## Overview
+All features must follow test-driven development practices. Write tests first, then implement the feature.
+
+## Requirements
+
+### Test First
+- Write failing tests before implementing features
+- Tests should cover both happy path and edge cases
+- Include security-focused test cases
+
+### Testing Stack
+- Jest for unit and integration tests
+- React Testing Library for component tests
+- Next.js Testing Library for API routes
+- Prisma Client mocking for database tests
+
+### Security Testing
+- Authentication flow tests
+- Authorization boundary tests
+- Input validation tests
+- Rate limiting tests
+- Session management tests
+
+### Test Coverage
+- Minimum 80% code coverage required
+- 100% coverage for security-critical paths
+- All API endpoints must have tests
+- All form submissions must have validation tests
+
+### Test Organization
+```typescript
+// Example test structure
+describe('Feature', () => {
+  describe('Happy Path', () => {
+    test('should work with valid input', () => {})
+  })
+  
+  describe('Security', () => {
+    test('should reject invalid tokens', () => {})
+    test('should prevent unauthorized access', () => {})
+  })
+  
+  describe('Edge Cases', () => {
+    test('should handle missing data', () => {})
+    test('should rate limit excessive requests', () => {})
+  })
+})
+```
