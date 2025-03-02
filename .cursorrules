@@ -1,0 +1,116 @@
+{
+  "version": "1.0",
+  "project": {
+    "name": "ai-platform",
+    "type": "fullstack",
+    "description": "AI Platform with React frontend and Firebase/Python backend"
+  },
+  "structure": {
+    "frontend": {
+      "root": "src",
+      "framework": "react",
+      "styling": "css",
+      "routing": "react-router-dom",
+      "state": "context-api",
+      "auth": {
+        "provider": "firebase",
+        "components": ["Auth", "unAuth"]
+      }
+    },
+    "middleware": {
+      "platform": "firebase",
+      "services": [
+        "functions",
+        "hosting",
+        "firestore",
+        "storage",
+        "pubsub",
+        "auth"
+      ],
+      "security": {
+        "firestore": "rules",
+        "storage": "rules"
+      },
+      "emulators": {
+        "enabled": true,
+        "ui": true
+      }
+    },
+    "backend": {
+      "language": "python",
+      "runtime": "firebase-functions",
+      "dependencies": "requirements.txt",
+      "entrypoint": "main.py"
+    }
+  },
+  "development": {
+    "versionControl": {
+      "branchPrefixes": {
+        "feature": "feature/",
+        "fix": "fix/",
+        "refactor": "refactor/",
+        "test": "test/"
+      },
+      "commitStyle": "conventional",
+      "mainProtection": true
+    },
+    "testing": {
+      "framework": "jest",
+      "coverageThreshold": 80,
+      "setupFile": "setupTests.js",
+      "directories": {
+        "unit": "src/__tests__/unit/",
+        "integration": "src/__tests__/integration/",
+        "db": "src/__tests__/db/"
+      },
+      "runBeforePush": true
+    },
+    "codeQuality": {
+      "typescript": {
+        "strict": true,
+        "status": "planned"
+      },
+      "linting": "eslint",
+      "formatting": "prettier",
+      "hooks": "husky"
+    }
+  },
+  "dependencies": {
+    "node": "18.x",
+    "packageManager": "npm",
+    "pythonEnv": "venv"
+  },
+  "security": {
+    "envFiles": {
+      "allowCommit": false
+    },
+    "apiKeys": {
+      "storage": "firebase-config"
+    },
+    "auth": {
+      "required": true,
+      "databaseSecurity": "row-level",
+      "storage": "authenticated-only"
+    }
+  },
+  "cicd": {
+    "checks": {
+      "tests": true,
+      "coverage": true,
+      "lint": true,
+      "types": true
+    },
+    "deployment": {
+      "platform": "firebase",
+      "environments": [
+        "development",
+        "staging",
+        "production"
+      ],
+      "autoDeploy": {
+        "branch": "main",
+        "enabled": true
+      }
+    }
+  }
+} 

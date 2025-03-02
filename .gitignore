@@ -28,6 +28,9 @@ ENV/
 env.bak/
 venv.bak/
 .python-version
+python_functions/venv/
+**/venv/
+**/ENV/
 
 # Node.js
 node_modules/
@@ -40,6 +43,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env
 
 # Firebase
 .firebase/
@@ -48,6 +52,8 @@ firestore-debug.log
 ui-debug.log
 pubsub-debug.log
 .runtimeconfig.json
+*-debug.log
+.firebase-debug.log
 
 # IDE and Editor files
 .idea/
@@ -56,6 +62,8 @@ pubsub-debug.log
 *.swo
 *~
 .DS_Store
+*.sublime-*
+*.code-workspace
 
 # Build and Distribution
 dist/
@@ -65,4 +73,9 @@ __pycache__/
 .coverage
 coverage/
 .pytest_cache/
-htmlcov/ 
+htmlcov/
+
+# Local development
+*.local
+.env.*
+!.env.example 
