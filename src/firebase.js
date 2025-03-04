@@ -1,6 +1,5 @@
 // Import required Firebase modules
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -11,16 +10,11 @@ import {
   onAuthStateChanged,
   connectAuthEmulator,
   getRedirectResult,
-  signOut
-} from "firebase/auth";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  connectFirestoreEmulator
-} from "firebase/firestore";
-import { getFunctions, connectFunctionsEmulator } from "firebase/functions"; // Import Functions modules
-import { getStorage, connectStorageEmulator } from "firebase/storage"; // Import Storage modules
+  signOut,
+} from 'firebase/auth';
+import { getFirestore, doc, getDoc, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'; // Import Functions modules
+import { getStorage, connectStorageEmulator } from 'firebase/storage'; // Import Storage modules
 
 // Firebase configuration object
 const firebaseConfig = {
@@ -30,16 +24,15 @@ const firebaseConfig = {
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const storage = getStorage(app);
-// Initialize Firebase services
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+const storage = getStorage(app);
+// Initialize Firebase services
 const db = getFirestore(app);
 const functions = getFunctions(app); // Initialize Functions
 
@@ -66,5 +59,5 @@ export {
   isSignInWithEmailLink,
   signInWithEmailLink,
   onAuthStateChanged,
-  getRedirectResult
+  getRedirectResult,
 };

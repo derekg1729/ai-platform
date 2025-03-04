@@ -1,6 +1,7 @@
 // UserPrompts.js
 import React, { useState } from 'react';
 import './UserPrompts.css';
+import PropTypes from 'prop-types';
 
 const UserPrompts = ({ prompts, onSubmit }) => {
   const [input, setInput] = useState('');
@@ -45,6 +46,16 @@ const UserPrompts = ({ prompts, onSubmit }) => {
       </div>
     </div>
   );
+};
+
+UserPrompts.propTypes = {
+  prompts: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  onSubmit: PropTypes.func.isRequired,
 };
 
 export default UserPrompts;

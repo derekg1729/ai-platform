@@ -10,14 +10,14 @@ const mockAuth = { currentUser: null };
 
 jest.mock('firebase/auth', () => ({
   getAuth: () => mockAuth,
-  signInWithEmailAndPassword: (...args) => mockSignInWithEmailAndPassword(...args)
+  signInWithEmailAndPassword: (...args) => mockSignInWithEmailAndPassword(...args),
 }));
 
 // Mock useNavigate
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate
+  useNavigate: () => mockNavigate,
 }));
 
 describe('Auth Component', () => {
@@ -38,7 +38,7 @@ describe('Auth Component', () => {
 
   test('renders login form', async () => {
     renderAuth();
-    
+
     // Wait for and verify form elements
     await waitFor(() => {
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
@@ -94,4 +94,4 @@ describe('Auth Component', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(errorMessage);
     });
   });
-}); 
+});

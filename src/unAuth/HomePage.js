@@ -7,7 +7,13 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // Import additional Font Awesome icons
-import { faRobot, faDatabase, faMagic, faCode, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faRobot,
+  faDatabase,
+  faMagic,
+  faCode,
+  faMobileAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import { fab } from '@fortawesome/free-brands-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
 
@@ -16,7 +22,7 @@ library.add(fab, faRobot, faDatabase, faMagic, faCode, faMobileAlt);
 
 const HomePage = () => {
   // State for carousel
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [, setCurrentSlide] = useState(0);
   const [activeNav, setActiveNav] = useState('home');
 
   useEffect(() => {
@@ -25,34 +31,37 @@ const HomePage = () => {
     console.log('GCLID:', gclid); // Log the GCLID value
     localStorage.setItem('gclid', gclid);
   }, []);
-  
-
 
   const slides = [
     {
       icon: ['fab', 'react'],
       title: 'React',
-      description: 'Build interactive UIs with ease using React’s component-based architecture.',
+      description:
+        'Build interactive UIs with ease using React&apos;s component-based architecture',
     },
     {
       icon: ['fab', 'google'],
       title: 'Google Cloud',
-      description: 'Leverage scalable cloud infrastructure and services to deploy your applications.',
+      description:
+        'Leverage scalable cloud infrastructure and services to deploy your applications',
     },
     {
-      icon: 'database', // Placeholder for Firebase
+      icon: 'database',
       title: 'Firebase',
-      description: 'Utilize real-time databases and authentication services to manage your backend effortlessly.',
+      description:
+        'Utilize real-time databases and authentication services to manage your backend effortlessly',
     },
     {
       icon: ['fab', 'github'],
       title: 'GitHub',
-      description: 'Collaborate and manage your codebase efficiently with GitHub’s version control system.',
+      description:
+        'Collaborate and manage your codebase efficiently with GitHub&apos;s version control system',
     },
     {
       icon: ['fab', 'python'],
       title: 'Python',
-      description: 'Implement robust backend logic and data processing with Python’s versatile capabilities.',
+      description:
+        'Implement robust backend logic and data processing with Python&apos;s versatile capabilities',
     },
   ];
 
@@ -65,7 +74,8 @@ const HomePage = () => {
   const episodes = [
     {
       title: 'Introduction to Backend Development',
-      description: 'Kickstart your journey by understanding the fundamentals of backend development.',
+      description:
+        'Kickstart your journey by understanding the fundamentals of backend development.',
       videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
     },
   ];
@@ -96,39 +106,59 @@ const HomePage = () => {
     <div className="unauth-homepage">
       {/* Navigation Bar */}
       <nav className="unauth-navbar">
-        <div className="unauth-logo" onClick={() => handleNavClick('home')}>
+        <button
+          type="button"
+          className="unauth-logo"
+          onClick={() => handleNavClick('home')}
+          onKeyDown={(e) => e.key === 'Enter' && handleNavClick('home')}
+        >
           <FontAwesomeIcon icon="robot" className="unauth-header-icon" /> YourApp
-        </div>
+        </button>
         <ul className="unauth-nav-links">
-          <li
-            className={activeNav === 'features' ? 'active' : ''}
-            onClick={() => handleNavClick('features')}
-          >
-            Features
+          <li>
+            <button
+              type="button"
+              className={activeNav === 'features' ? 'active' : ''}
+              onClick={() => handleNavClick('features')}
+            >
+              Features
+            </button>
           </li>
-          <li
-            className={activeNav === 'tech-stack' ? 'active' : ''}
-            onClick={() => handleNavClick('tech-stack')}
-          >
-            Tech Stack
+          <li>
+            <button
+              type="button"
+              className={activeNav === 'tech-stack' ? 'active' : ''}
+              onClick={() => handleNavClick('tech-stack')}
+            >
+              Tech Stack
+            </button>
           </li>
-          <li
-            className={activeNav === 'episodes' ? 'active' : ''}
-            onClick={() => handleNavClick('episodes')}
-          >
-            Episodes
+          <li>
+            <button
+              type="button"
+              className={activeNav === 'episodes' ? 'active' : ''}
+              onClick={() => handleNavClick('episodes')}
+            >
+              Episodes
+            </button>
           </li>
-          <li
-            className={activeNav === 'testimonials' ? 'active' : ''}
-            onClick={() => handleNavClick('testimonials')}
-          >
-            Testimonials
+          <li>
+            <button
+              type="button"
+              className={activeNav === 'testimonials' ? 'active' : ''}
+              onClick={() => handleNavClick('testimonials')}
+            >
+              Testimonials
+            </button>
           </li>
-          <li
-            className={activeNav === 'cta' ? 'active' : ''}
-            onClick={() => handleNavClick('cta')}
-          >
-            Get Started
+          <li>
+            <button
+              type="button"
+              className={activeNav === 'cta' ? 'active' : ''}
+              onClick={() => handleNavClick('cta')}
+            >
+              Get Started
+            </button>
           </li>
         </ul>
       </nav>
@@ -137,11 +167,12 @@ const HomePage = () => {
       <header className="unauth-hero-section" id="home">
         <div className="unauth-hero-content">
           <h1>
-            <FontAwesomeIcon icon="robot" className="unauth-header-icon" /> Actually Build Backend Apps Using AI
+            <FontAwesomeIcon icon="robot" className="unauth-header-icon" /> Actually Build Backend
+            Apps Using AI
           </h1>
           <p>Leverage the power of AI to streamline your backend development process.</p>
           <Link to="/signup" className="unauth-cta-button">
-            Let's get started ☕
+            Let&apos;s get started ☕
           </Link>
         </div>
       </header>
@@ -226,15 +257,15 @@ const HomePage = () => {
         <h2>What Developers Are Saying</h2>
         <div className="unauth-testimonials-grid">
           <div className="unauth-testimonial-item">
-            <p>"This series has been a game-changer for my backend development skills."</p>
+            <p>&quot;The AI platform has revolutionized our development process&quot;</p>
             <h4>- Alex Johnson</h4>
           </div>
           <div className="unauth-testimonial-item">
-            <p>"The step-by-step tutorials make complex concepts easy to grasp."</p>
+            <p>&quot;We&apos;ve seen a 40% increase in productivity&quot;</p>
             <h4>- Maria Gomez</h4>
           </div>
           <div className="unauth-testimonial-item">
-            <p>"I love how the series integrates AI tools to streamline the development process."</p>
+            <p>&quot;This platform is exactly what we needed&quot;</p>
             <h4>- Liam Smith</h4>
           </div>
         </div>

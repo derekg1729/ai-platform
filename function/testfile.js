@@ -7,6 +7,6 @@ exports.onUserCreate = functions.auth.user().onCreate((user) => {
   const email = user.email;
 
   return admin.firestore().collection('users').doc(uid).set({
-    email: email
+    email: email,
   });
 });

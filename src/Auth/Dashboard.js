@@ -32,15 +32,16 @@ const Dashboard = () => {
   const [uploadError, setUploadError] = useState(null); // For upload error
   const navigate = useNavigate(); // If using react-router
   const fileInputRef = useRef(null); // Ref for hidden file input
+  const [data, setData] = useState(null);
 
   // Purchase State
-  const [purchaseButtonText, setPurchaseButtonText] = useState("Purchase");
+  const [purchaseButtonText, setPurchaseButtonText] = useState('Purchase');
 
   // Fixed price
-  const purchasePrice = "5.00"; // Fixed price of $5.00
+  const purchasePrice = '5.00'; // Fixed price of $5.00
 
   const initiatePurchase = async () => {
-    setPurchaseButtonText("Processing...");
+    setPurchaseButtonText('Processing...');
     try {
       const functionsInstance = functions;
       const createSession = httpsCallable(functionsInstance, 'startPaymentSession'); // Renamed cloud function
@@ -56,7 +57,7 @@ const Dashboard = () => {
 
       // Call the Firebase function with the prepared payload
       const response = await createSession(payload);
-      
+
       const { sessionId } = response.data;
       const stripe = await stripePromise;
 
@@ -65,15 +66,15 @@ const Dashboard = () => {
 
       if (error) {
         // Handle Stripe redirection errors
-        setPurchaseButtonText("Retry");
+        setPurchaseButtonText('Retry');
       } else {
         // Reset button text if redirection is successful
-        setPurchaseButtonText("Purchase");
+        setPurchaseButtonText('Purchase');
       }
     } catch (err) {
       // Handle errors from the backend function
       console.error('Purchase Error:', err);
-      setPurchaseButtonText("Retry");
+      setPurchaseButtonText('Retry');
     }
   };
 
@@ -81,11 +82,10 @@ const Dashboard = () => {
     initiatePurchase();
   };
 
-
   useEffect(() => {
     const fetchUserProfile = async () => {
       const user = auth.currentUser;
-      console.log("Current user:", user); // Log the current user object for debugging
+      console.log('Current user:', user); // Log the current user object for debugging
 
       if (user) {
         try {
@@ -107,8 +107,8 @@ const Dashboard = () => {
 
     const selectRandomQuote = () => {
       const allQuotes = [
-        "The greatest glory in living lies not in never falling, but in rising every time we fall. — Nelson Mandela",
-        "The way to get started is to quit talking and begin doing. — Walt Disney",
+        'The greatest glory in living lies not in never falling, but in rising every time we fall. — Nelson Mandela',
+        'The way to get started is to quit talking and begin doing. — Walt Disney',
         "Your time is limited, so don't waste it living someone else's life. — Steve Jobs",
         // Add more quotes as desired
       ];
@@ -129,20 +129,24 @@ const Dashboard = () => {
 
         // Set up Firestore listener for prompts
         const userDocRef = doc(db, 'users', user.uid);
-        const unsubscribePrompts = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setPrompts(data.prompts || []);
-            setAIResponses(data.AIResponses || []);
-          } else {
-            console.log('No such document for prompts!');
-            setPrompts([]);
-            setAIResponses([]);
+        const unsubscribePrompts = onSnapshot(
+          userDocRef,
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              setPrompts(data.prompts || []);
+              setAIResponses(data.AIResponses || []);
+            } else {
+              console.log('No such document for prompts!');
+              setPrompts([]);
+              setAIResponses([]);
+            }
+          },
+          (err) => {
+            console.error('Error fetching prompts and AI responses:', err);
+            setError('Failed to fetch prompts and AI responses.');
           }
-        }, (err) => {
-          console.error('Error fetching prompts and AI responses:', err);
-          setError('Failed to fetch prompts and AI responses.');
-        });
+        );
 
         // Cleanup Firestore listener on unmount or user change
         return () => {
@@ -224,10 +228,10 @@ const Dashboard = () => {
     try {
       // Create a storage reference
       const storageRefInstance = ref(storage, `profile_pictures/${user.uid}/${file.name}`);
-      
+
       // Upload the file
       await uploadBytes(storageRefInstance, file);
-      
+
       // Get the download URL
       const downloadURL = await getDownloadURL(storageRefInstance);
 
@@ -242,7 +246,6 @@ const Dashboard = () => {
         ...prevProfile,
         profileImage: downloadURL,
       }));
-
     } catch (err) {
       console.error('Error uploading file:', err);
       setUploadError('Failed to upload image.');
@@ -277,14 +280,10 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <h1 className="dashboard-header">Welcome to Messagly Dashboard!</h1>
-      
+
       <div className="profile-section">
         {userProfile.profileImage ? (
-          <img
-            src={userProfile.profileImage}
-            alt="Profile"
-            className="profile-image"
-          />
+          <img src={userProfile.profileImage} alt="Profile" className="profile-image" />
         ) : (
           <div className="profile-placeholder">No Image</div>
         )}
@@ -292,11 +291,11 @@ const Dashboard = () => {
 
         {/* Upload Button/Icon */}
         <div className="upload-section">
-          <FontAwesomeIcon 
-            icon={faUpload} 
-            className="upload-icon" 
-            onClick={triggerFileInput} 
-            title="Upload Profile Image" 
+          <FontAwesomeIcon
+            icon={faUpload}
+            className="upload-icon"
+            onClick={triggerFileInput}
+            title="Upload Profile Image"
           />
           <input
             type="file"

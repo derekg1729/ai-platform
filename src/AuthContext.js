@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import PropTypes from 'prop-types';
 
 export const AuthContext = createContext();
 
@@ -45,16 +46,16 @@ export const AuthProvider = ({ children }) => {
       window.gtag('event', 'sign_up', {
         method: method,
         gclid: gclid,
-        user_id: userId
+        user_id: userId,
       });
     } else {
       console.error('gtag is not defined');
     }
   };
 
-  return (
-    <AuthContext.Provider value={{ currentUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ currentUser }}>{children}</AuthContext.Provider>;
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

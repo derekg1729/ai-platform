@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import HomePage from './unAuth/HomePage';
@@ -12,7 +13,7 @@ const REACT_APP_GA4_MEASUREMENT_ID = process.env.REACT_APP_GA4_MEASUREMENT_ID;
 
 const PrivateRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -20,7 +21,11 @@ const PrivateRoute = ({ children }) => {
   return currentUser ? children : <Navigate to="/" />;
 };
 
-function App() {
+PrivateRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+const App = () => {
   return (
     <AuthProvider>
       <Router>
@@ -41,7 +46,7 @@ function App() {
                     send_page_view: false,
                   });
                 `}
-              </script>
+              </script>,
             ]}
           </Helmet>
           <Routes>
@@ -61,6 +66,6 @@ function App() {
       </Router>
     </AuthProvider>
   );
-}
+};
 
 export default App;

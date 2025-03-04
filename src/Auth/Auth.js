@@ -12,7 +12,7 @@ function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/dashboard');
@@ -23,7 +23,7 @@ function Auth() {
 
   return (
     <div className="auth-container">
-      <form onSubmit={handleSubmit} role="form" aria-label="Login form">
+      <form onSubmit={handleSubmit} className="auth-form" aria-label="Login form">
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
@@ -63,4 +63,4 @@ function Auth() {
   );
 }
 
-export default Auth; 
+export default Auth;

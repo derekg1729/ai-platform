@@ -3,7 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import './SignPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
-import { auth, googleProvider, signInWithRedirect, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, getRedirectResult } from '../firebase';
+import {
+  auth,
+  googleProvider,
+  signInWithRedirect,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+  getRedirectResult,
+} from '../firebase';
 
 const SignPage = () => {
   const [email, setEmail] = useState('');
@@ -18,7 +26,7 @@ const SignPage = () => {
         }
       })
       .catch((error) => {
-        console.error("Error with redirect sign-in", error);
+        console.error('Error with redirect sign-in', error);
       });
 
     // Check if the user is signing in with an email link
@@ -33,7 +41,7 @@ const SignPage = () => {
           navigate('/dashboard');
         })
         .catch((error) => {
-          console.error("Error signing in with email link", error);
+          console.error('Error signing in with email link', error);
         });
     }
   }, [navigate]);
@@ -51,21 +59,20 @@ const SignPage = () => {
         alert('Check your email for the sign-in link!');
       })
       .catch((error) => {
-        console.error("Error sending sign-in link to email", error);
+        console.error('Error sending sign-in link to email', error);
       });
   };
 
   const handleGoogleSignIn = () => {
-    signInWithRedirect(auth, googleProvider)
-      .catch((error) => {
-        console.error("Error initiating Google sign-in", error);
-      });
+    signInWithRedirect(auth, googleProvider).catch((error) => {
+      console.error('Error initiating Google sign-in', error);
+    });
   };
 
   return (
     <div className="sign-container">
       <div className="sign-card">
-        <h2 className="sign-header">Let's get started!</h2>
+        <h2 className="sign-header">Let&apos;s get started!</h2>
         <form className="sign-form" onSubmit={handleEmailSignIn}>
           <input
             type="email"
